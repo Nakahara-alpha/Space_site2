@@ -29,6 +29,11 @@ p{
      font-weight: 800;
 }
 
+.btn:hover{
+    width: 200px;
+    color: #6f8fb7;
+    background-color: #e0e0e0;
+}
 #hero{
     background-image: url("spaceslide.webp");
     background-size: cover;
@@ -49,4 +54,5 @@ input{
     background-color: rgba(48, 13, 68, 0.411);
     text-shadow: 0px 0px 3px black;
 }
+
 
