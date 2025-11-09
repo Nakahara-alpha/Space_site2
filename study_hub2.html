@@ -209,22 +209,22 @@ function rateCard(quality) {
 
 function calculateLevel(xp) {
     if (xp < 3000) return 1;
-    if (xp < 7000) return 2;  // 3000 + 4000
-    if (xp < 12000) return 3; // 7000 + 5000
-    if (xp < 18000) return 4; // 12000 + 6000
-    if (xp < 25000) return 5; // 18000 + 7000
-    if (xp < 33000) return 6; // 25000 + 8000
-    if (xp < 42000) return 7; // 33000 + 9000
-    if (xp < 52000) return 8; // 42000 + 10000
+    if (xp < 7250) return 2;  // 3000 + 4250
+    if (xp < 12000) return 3; // 7250 + 4750
+    if (xp < 17250) return 4; // 12000 + 5250
+    if (xp < 23000) return 5; // 17250 + 5750
+    if (xp < 29250) return 6; // 23000 + 6250
+    if (xp < 36000) return 7; // 29250 + 6750
+    if (xp < 43250) return 8; // 36000 + 7250
     
-    // Level 9+: continues pattern (11000, 12000, 13000...)
+    // Level 9+: continues pattern (7750, 8250, 8750...)
     let level = 9;
-    let threshold = 52000;
-    let increment = 11000;
+    let threshold = 43250;
+    let increment = 7750;
     
     while (xp >= threshold + increment) {
         threshold += increment;
-        increment += 1000;
+        increment += 500;
         level++;
     }
     
@@ -233,16 +233,16 @@ function calculateLevel(xp) {
 
 function getXPForNextLevel(currentLevel) {
     if (currentLevel === 1) return 3000;
-    if (currentLevel === 2) return 4000;
-    if (currentLevel === 3) return 5000;
-    if (currentLevel === 4) return 6000;
-    if (currentLevel === 5) return 7000;
-    if (currentLevel === 6) return 8000;
-    if (currentLevel === 7) return 9000;
-    if (currentLevel === 8) return 10000;
+    if (currentLevel === 2) return 4250;
+    if (currentLevel === 3) return 4750;
+    if (currentLevel === 4) return 5250;
+    if (currentLevel === 5) return 5750;
+    if (currentLevel === 6) return 6250;
+    if (currentLevel === 7) return 6750;
+    if (currentLevel === 8) return 7250;
     
-    // Level 9+: pattern continues
-    return 10000 + (currentLevel - 8) * 1000;
+    // Level 9+: pattern continues with +250 each time
+    return 7250 + (currentLevel - 8) * 500;
 }
 
 function getXPProgress() {
@@ -943,7 +943,7 @@ function renderGamification() {
                             </div>
                         </div>
                         <p class="text-xs sm:text-sm text-gray-600 mt-3 text-center">
-                            Each level requires more XP: Level 2 needs 3,000 XP, Level 3 needs 4,000 more, Level 4 needs 5,000 more, and so on!
+                            Each level requires more XP: Level 2 needs 3,000 XP, Level 3 needs 4,250 more, Level 4 needs 4,750 more, increasing by 250 XP each level!
                         </p>
                     </section>
 
@@ -1118,65 +1118,67 @@ function render() {
     let content = '';
     
     if (state.reviewMode) {
+        // In review mode - ONLY show the review content, NO modals
         content = renderReviewMode();
-    } else {
-        content = `
-            <!-- Header -->
-            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10 safe-area-top">
-                <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2 sm:gap-3">
-                            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
-                                ${icon('brain', 'w-4 h-4 sm:w-6 sm:h-6 text-white')}
-                            </div>
-                            <div>
-                                <h1 class="text-base sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                    Study Hub
-                                </h1>
-                                <p class="text-[10px] sm:text-xs text-gray-500 font-medium -mt-0.5">(𝐵𝑌 𝑅𝛯𝐷 𝐹𝐿𝛥𝐺)</p>
-                            </div>
+        app.innerHTML = content;
+        return; // Exit early to prevent any modals from rendering
+    }
+    
+    // Not in review mode - show normal content with modals
+    content = `
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10 safe-area-top">
+            <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
+                            ${icon('brain', 'w-4 h-4 sm:w-6 sm:h-6 text-white')}
                         </div>
-                        <div class="flex items-center gap-1.5 sm:gap-4">
-                            <button onclick="state.showGuide = true; render();" 
-                                class="flex items-center gap-1 text-indigo-600 active:text-indigo-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
-                                ${icon('helpCircle', 'w-4 h-4 sm:w-5 sm:h-5')}
-                            </button>
-                            <button onclick="state.showGamification = true; render();" 
-                                class="flex items-center gap-1 text-purple-600 active:text-purple-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
-                                ${icon('award', 'w-4 h-4 sm:w-5 sm:h-5')}
-                            </button>
-                            <button onclick="if(confirm('Delete all data?')) resetAllData();" 
-                                class="flex items-center text-red-600 active:text-red-700 font-medium transition-colors text-xs touch-card p-1.5 sm:p-2">
-                                ${icon('trash', 'w-4 h-4 sm:w-5 sm:h-5')}
-                            </button>
-                            <div class="flex items-center gap-1 bg-orange-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
-                                ${icon('flame', 'w-3 h-3 sm:w-4 sm:h-4 text-orange-500')}
-                                <span class="font-bold text-orange-700 text-xs">${state.user.streak}</span>
-                            </div>
-                            <div class="flex items-center gap-1 bg-yellow-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
-                                ${icon('trophy', 'w-3 h-3 sm:w-4 sm:h-4 text-yellow-600')}
-                                <span class="font-bold text-yellow-700 text-xs">${state.user.xp}</span>
-                            </div>
-                            <div class="flex bg-indigo-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
-                                <span class="font-bold text-indigo-700 text-xs sm:text-sm">Lvl ${state.user.level}</span>
-                            </div>
+                        <div>
+                            <h1 class="text-base sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                Study Hub
+                            </h1>
+                            <p class="text-[10px] sm:text-xs text-gray-500 font-medium -mt-0.5">(𝐵𝑌 𝑅𝛯𝐷 𝐹𝐿𝛥𝐺)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 sm:gap-4">
+                        <button onclick="state.showGuide = true; render();" 
+                            class="flex items-center gap-1 text-indigo-600 active:text-indigo-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
+                            ${icon('helpCircle', 'w-4 h-4 sm:w-5 sm:h-5')}
+                        </button>
+                        <button onclick="state.showGamification = true; render();" 
+                            class="flex items-center gap-1 text-purple-600 active:text-purple-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
+                            ${icon('award', 'w-4 h-4 sm:w-5 sm:h-5')}
+                        </button>
+                        <button onclick="if(confirm('Delete all data?')) resetAllData();" 
+                            class="flex items-center text-red-600 active:text-red-700 font-medium transition-colors text-xs touch-card p-1.5 sm:p-2">
+                            ${icon('trash', 'w-4 h-4 sm:w-5 sm:h-5')}
+                        </button>
+                        <div class="flex items-center gap-1 bg-orange-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
+                            ${icon('flame', 'w-3 h-3 sm:w-4 sm:h-4 text-orange-500')}
+                            <span class="font-bold text-orange-700 text-xs">${state.user.streak}</span>
+                        </div>
+                        <div class="flex items-center gap-1 bg-yellow-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
+                            ${icon('trophy', 'w-3 h-3 sm:w-4 sm:h-4 text-yellow-600')}
+                            <span class="font-bold text-yellow-700 text-xs">${state.user.xp}</span>
+                        </div>
+                        <div class="flex bg-indigo-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
+                            <span class="font-bold text-indigo-700 text-xs sm:text-sm">Lvl ${state.user.level}</span>
                         </div>
                     </div>
                 </div>
-            </header>
-
-            <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-                ${state.currentView === 'dashboard' ? renderDashboard() : ''}
-                ${state.currentView === 'createDeck' ? renderCreateDeck() : ''}
-                ${state.currentView === 'analytics' ? renderAnalytics() : ''}
-                ${state.currentView === 'deckDetails' ? renderDeckDetails() : ''}
             </div>
-        `;
-    }
+        </header>
+
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+            ${state.currentView === 'dashboard' ? renderDashboard() : ''}
+            ${state.currentView === 'createDeck' ? renderCreateDeck() : ''}
+            ${state.currentView === 'analytics' ? renderAnalytics() : ''}
+            ${state.currentView === 'deckDetails' ? renderDeckDetails() : ''}
+        </div>
+    `;
     
-    // Only show modals when NOT in review mode
-    const modals = state.reviewMode ? '' : renderGuide() + renderGamification();
-    app.innerHTML = content + modals;
+    app.innerHTML = content + renderGuide() + renderGamification();
 }
 
 // Initialize
