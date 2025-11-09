@@ -450,8 +450,27 @@ function renderReviewMode() {
 function renderDashboard() {
     const dueToday = getTodaysDueCards().length;
     const thisWeek = getThisWeekReviews();
+    const xpProgress = getXPProgress();
+    
     return `
         <div class="space-y-4 sm:space-y-8 pb-safe">
+            <!-- XP Progress Bar -->
+            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg sm:text-xl font-bold text-indigo-600">Level ${state.user.level}</span>
+                        <span class="text-xs sm:text-sm text-gray-600">${state.user.xp} Total XP</span>
+                    </div>
+                    <span class="text-xs sm:text-sm text-gray-600 font-medium">${xpProgress.current} / ${xpProgress.needed} XP</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 sm:h-5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-full rounded-full transition-all duration-500 flex items-center justify-end px-2" style="width: ${xpProgress.percent}%">
+                        <span class="text-white text-xs font-bold">${Math.round(xpProgress.percent)}%</span>
+                    </div>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-500 mt-2 text-center">${xpProgress.needed - xpProgress.current} XP to Level ${state.user.level + 1}</p>
+            </div>
+            
             <!-- Stats Cards -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-indigo-500">
@@ -898,25 +917,32 @@ function renderGamification() {
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <div class="bg-white rounded-lg p-3 text-center">
                                 <div class="text-xl sm:text-2xl font-bold text-gray-500">Level 1</div>
-                                <div class="text-xs sm:text-sm text-gray-600">0 - 99 XP</div>
+                                <div class="text-xs sm:text-sm text-gray-600">0 - 2,999 XP</div>
                             </div>
                             <div class="bg-white rounded-lg p-3 text-center">
                                 <div class="text-xl sm:text-2xl font-bold text-green-600">Level 2</div>
-                                <div class="text-xs sm:text-sm text-gray-600">100 - 249 XP</div>
+                                <div class="text-xs sm:text-sm text-gray-600">3,000 XP</div>
                             </div>
                             <div class="bg-white rounded-lg p-3 text-center">
                                 <div class="text-xl sm:text-2xl font-bold text-blue-600">Level 3</div>
-                                <div class="text-xs sm:text-sm text-gray-600">250 - 499 XP</div>
+                                <div class="text-xs sm:text-sm text-gray-600">7,000 XP</div>
                             </div>
                             <div class="bg-white rounded-lg p-3 text-center">
                                 <div class="text-xl sm:text-2xl font-bold text-purple-600">Level 4</div>
-                                <div class="text-xs sm:text-sm text-gray-600">500 - 999 XP</div>
+                                <div class="text-xs sm:text-sm text-gray-600">12,000 XP</div>
                             </div>
                             <div class="bg-white rounded-lg p-3 text-center">
-                                <div class="text-xl sm:text-2xl font-bold text-yellow-600">Level 5+</div>
-                                <div class="text-xs sm:text-sm text-gray-600">1000+ XP</div>
+                                <div class="text-xl sm:text-2xl font-bold text-yellow-600">Level 5</div>
+                                <div class="text-xs sm:text-sm text-gray-600">18,000 XP</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 text-center">
+                                <div class="text-xl sm:text-2xl font-bold text-red-600">Level 6+</div>
+                                <div class="text-xs sm:text-sm text-gray-600">25,000+ XP</div>
                             </div>
                         </div>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-3 text-center">
+                            Each level requires more XP: Level 2 needs 3,000 XP, Level 3 needs 4,000 more, Level 4 needs 5,000 more, and so on!
+                        </p>
                     </section>
 
                     <section class="bg-red-50 rounded-xl p-4 sm:p-5 border-l-4 border-red-500">
@@ -1130,7 +1156,7 @@ function render() {
                                 <span class="font-bold text-yellow-700 text-xs">${state.user.xp}</span>
                             </div>
                             <div class="flex bg-indigo-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
-                                <span class="font-bold text-indigo-700 text-xs">L${state.user.level}</span>
+                                <span class="font-bold text-indigo-700 text-xs sm:text-sm">Lvl ${state.user.level}</span>
                             </div>
                         </div>
                     </div>
