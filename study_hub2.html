@@ -865,29 +865,32 @@ function render() {
                             <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
                                 ${icon('brain', 'w-4 h-4 sm:w-6 sm:h-6 text-white')}
                             </div>
-                            <h1 class="text-lg sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                Study Hub
-                            </h1>
+                            <div>
+                                <h1 class="text-base sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                    Study Hub
+                                </h1>
+                                <p class="text-[10px] sm:text-xs text-gray-500 font-medium -mt-0.5">(𝐵𝑌 𝑅𝛯𝐷 𝐹𝐿𝛥𝐺)</p>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2 sm:gap-4">
+                        <div class="flex items-center gap-1.5 sm:gap-4">
                             <button onclick="state.showGuide = true; render();" 
-                                class="flex items-center gap-1 text-indigo-600 active:text-indigo-700 font-medium transition-colors text-xs sm:text-sm touch-card p-2">
+                                class="flex items-center gap-1 text-indigo-600 active:text-indigo-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
                                 ${icon('helpCircle', 'w-4 h-4 sm:w-5 sm:h-5')}
                             </button>
-                            <button onclick="resetAllData();" 
-                                class="hidden sm:flex text-red-600 active:text-red-700 font-medium transition-colors text-xs sm:text-sm touch-card">
-                                Reset
+                            <button onclick="if(confirm('Delete all data?')) resetAllData();" 
+                                class="flex items-center text-red-600 active:text-red-700 font-medium transition-colors text-xs touch-card p-1.5 sm:p-2">
+                                ${icon('trash', 'w-4 h-4 sm:w-5 sm:h-5')}
                             </button>
-                            <div class="flex items-center gap-1 sm:gap-2 bg-orange-100 px-2 sm:px-3 py-1 sm:py-2 rounded-full">
+                            <div class="flex items-center gap-1 bg-orange-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
                                 ${icon('flame', 'w-3 h-3 sm:w-4 sm:h-4 text-orange-500')}
-                                <span class="font-bold text-orange-700 text-xs sm:text-sm">${state.user.streak}</span>
+                                <span class="font-bold text-orange-700 text-xs">${state.user.streak}</span>
                             </div>
-                            <div class="flex items-center gap-1 sm:gap-2 bg-yellow-100 px-2 sm:px-3 py-1 sm:py-2 rounded-full">
+                            <div class="flex items-center gap-1 bg-yellow-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
                                 ${icon('trophy', 'w-3 h-3 sm:w-4 sm:h-4 text-yellow-600')}
-                                <span class="font-bold text-yellow-700 text-xs sm:text-sm">${state.user.xp}</span>
+                                <span class="font-bold text-yellow-700 text-xs">${state.user.xp}</span>
                             </div>
-                            <div class="hidden sm:flex bg-indigo-100 px-3 py-2 rounded-full">
-                                <span class="font-bold text-indigo-700 text-sm">Lvl ${state.user.level}</span>
+                            <div class="flex bg-indigo-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
+                                <span class="font-bold text-indigo-700 text-xs">L${state.user.level}</span>
                             </div>
                         </div>
                     </div>
