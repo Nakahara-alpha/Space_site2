@@ -177,8 +177,21 @@ function rateCard(quality) {
     Storage.set('cards', state.cards);
 
     const xpGain = quality >= 4 ? 15 : quality >= 3 ? 10 : 5;
+    const oldLevel = state.user.level;
     state.user.xp += xpGain;
+    
+    // Calculate new level based on cumulative XP
+    const newLevel = calculateLevel(state.user.xp);
+    state.user.level = newLevel;
+    
     Storage.set('user', state.user);
+
+    // Check for level up
+    if (newLevel > oldLevel) {
+        setTimeout(() => {
+            alert(`🎉 LEVEL UP! You've reached Level ${newLevel}! 🎉\n\nKeep up the great work!`);
+        }, 300);
+    }
 
     if (state.currentCardIndex < state.reviewQueue.length - 1) {
         state.currentCardIndex++;
@@ -190,6 +203,65 @@ function rateCard(quality) {
         alert(`Review complete! You earned ${xpGain * state.reviewQueue.length} XP!`);
         render();
     }
+}
+
+function calculateLevel(xp) {
+    if (xp < 3000) return 1;
+    if (xp < 7000) return 2;  // 3000 + 4000
+    if (xp < 12000) return 3; // 7000 + 5000
+    if (xp < 18000) return 4; // 12000 + 6000
+    if (xp < 25000) return 5; // 18000 + 7000
+    if (xp < 33000) return 6; // 25000 + 8000
+    if (xp < 42000) return 7; // 33000 + 9000
+    if (xp < 52000) return 8; // 42000 + 10000
+    
+    // Level 9+: continues pattern (11000, 12000, 13000...)
+    let level = 9;
+    let threshold = 52000;
+    let increment = 11000;
+    
+    while (xp >= threshold + increment) {
+        threshold += increment;
+        increment += 1000;
+        level++;
+    }
+    
+    return level;
+}
+
+function getXPForNextLevel(currentLevel) {
+    if (currentLevel === 1) return 3000;
+    if (currentLevel === 2) return 4000;
+    if (currentLevel === 3) return 5000;
+    if (currentLevel === 4) return 6000;
+    if (currentLevel === 5) return 7000;
+    if (currentLevel === 6) return 8000;
+    if (currentLevel === 7) return 9000;
+    if (currentLevel === 8) return 10000;
+    
+    // Level 9+: pattern continues
+    return 10000 + (currentLevel - 8) * 1000;
+}
+
+function getXPProgress() {
+    const currentLevel = state.user.level;
+    const totalXP = state.user.xp;
+    
+    // Calculate XP thresholds
+    let xpForCurrentLevel = 0;
+    for (let i = 1; i < currentLevel; i++) {
+        xpForCurrentLevel += getXPForNextLevel(i);
+    }
+    
+    const xpIntoCurrentLevel = totalXP - xpForCurrentLevel;
+    const xpNeededForNext = getXPForNextLevel(currentLevel);
+    const progressPercent = Math.min((xpIntoCurrentLevel / xpNeededForNext) * 100, 100);
+    
+    return {
+        current: xpIntoCurrentLevel,
+        needed: xpNeededForNext,
+        percent: progressPercent
+    };
 }
 
 function createDeck(title, courseCode) {
@@ -307,7 +379,45 @@ function renderReviewMode() {
                     <div class="flex gap-2">
                         ${icon('trophy', 'w-4 h-4 sm:w-5 sm:h-5 text-yellow-500')}
                         <span class="font-semibold text-gray-700 text-sm sm:text-base">${state.user.xp} XP</span>
-                    </div>
+                        <section>
+                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">🎮 Gamification Features</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                            <div class="text-center p-3 sm:p-4 bg-yellow-50 rounded-lg">
+                                ${icon('trophy', 'w-8 h-8 sm:w-10 sm:h-10 text-yellow-600 mx-auto mb-2')}
+                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">XP Points</h4>
+                                <p class="text-xs sm:text-sm text-gray-700">Earn 5-15 XP per card based on your rating!</p>
+                            </div>
+                            <div class="text-center p-3 sm:p-4 bg-orange-50 rounded-lg">
+                                ${icon('flame', 'w-8 h-8 sm:w-10 sm:h-10 text-orange-500 mx-auto mb-2')}
+                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Daily Streaks</h4>
+                                <p class="text-xs sm:text-sm text-gray-700">Review every day to maintain your streak!</p>
+                            </div>
+                            <div class="text-center p-3 sm:p-4 bg-indigo-50 rounded-lg">
+                                ${icon('award', 'w-8 h-8 sm:w-10 sm:h-10 text-indigo-600 mx-auto mb-2')}
+                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Level System</h4>
+                                <p class="text-xs sm:text-sm text-gray-700">Accumulate XP to reach higher levels!</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-red-50 rounded-xl p-4 sm:p-5 border-l-4 border-red-500">
+                        <h3 class="text-lg sm:text-xl font-bold text-red-600 mb-2 sm:mb-3">⚠️ Data Management</h3>
+                        <p class="text-sm sm:text-base text-gray-700 mb-2 sm:mb-3">All data is stored locally in your browser:</p>
+                        <ul class="space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-700 mb-3 sm:mb-4">
+                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Your data stays private and works offline</span></li>
+                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Clearing browser data will delete everything</span></li>
+                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Data doesn't sync across devices</span></li>
+                        </ul>
+                        <div class="bg-white rounded-lg p-3 sm:p-4">
+                            <p class="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Delete Options:</p>
+                            <ul class="space-y-1 text-xs sm:text-sm text-gray-700">
+                                <li><strong>Delete Card:</strong> Tap trash icon on any card</li>
+                                <li><strong>Delete Deck:</strong> Tap trash icon on any deck</li>
+                                <li><strong>Reset All:</strong> Click "Reset" in header</li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
                 </div>
 
                 <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 sm:p-8 mb-4 min-h-[250px] sm:min-h-64 flex items-center justify-center text-center touch-card">
@@ -1056,4 +1166,3 @@ if ('serviceWorker' in navigator && window.location.hostname !== 'www.claudeuser
 
 </body>
 </html>
-
