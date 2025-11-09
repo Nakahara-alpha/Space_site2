@@ -1,9 +1,9 @@
 {
   "name": "RED FLAG Study Hub",
-  "short_name": "StudyHub",
+  "short_name": "RF Study",
   "start_url": "/index.html",
   "name": "Study Hub - Spaced Repetition",
-  "short_name": "Study Hub",
+  "short_name": "RF Study",
   "description": "Smart flashcard app with spaced repetition",
   "start_url": "/study_hub2.html",
   "display": "standalone",
