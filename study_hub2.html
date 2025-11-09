@@ -1074,7 +1074,9 @@ function render() {
         `;
     }
     
-    app.innerHTML = content + renderGuide() + renderGamification();
+    // Only show modals when NOT in review mode
+    const modals = state.reviewMode ? '' : renderGuide() + renderGamification();
+    app.innerHTML = content + modals;
 }
 
 // Initialize
