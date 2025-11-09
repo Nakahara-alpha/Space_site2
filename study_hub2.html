@@ -136,6 +136,17 @@ function getTodaysDueCards() {
     return state.cards.filter(card => card.nextDue <= today);
 }
 
+function getThisWeekReviews() {
+    const today = new Date();
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 7);
+    
+    return state.cards.filter(card => {
+        const lastReview = new Date(card.nextDue);
+        return card.repetitions > 0 && lastReview >= weekAgo;
+    }).length;
+}
+
 function startReview(deckId = null) {
     let queue;
     if (deckId) {
@@ -366,6 +377,7 @@ function renderReviewMode() {
 
 function renderDashboard() {
     const dueToday = getTodaysDueCards().length;
+    const thisWeek = getThisWeekReviews();
     return `
         <div class="space-y-4 sm:space-y-8 pb-safe">
             <!-- Stats Cards -->
@@ -401,7 +413,7 @@ function renderDashboard() {
                     <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
                         <div>
                             <p class="text-xs sm:text-sm text-gray-600 font-medium">This Week</p>
-                            <p class="text-2xl sm:text-3xl font-bold text-gray-900">47</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-gray-900">${thisWeek}</p>
                         </div>
                         ${icon('trendingUp', 'w-8 h-8 sm:w-10 sm:h-10 text-yellow-500 opacity-80 mt-2 sm:mt-0')}
                     </div>
