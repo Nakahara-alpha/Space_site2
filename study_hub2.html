@@ -121,7 +121,8 @@ let state = {
     currentCardIndex: 0,
     showAnswer: false,
     reviewQueue: [],
-    showGuide: false
+    showGuide: false,
+    showGamification: false
 };
 
 function loadData() {
@@ -877,6 +878,10 @@ function render() {
                                 class="flex items-center gap-1 text-indigo-600 active:text-indigo-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
                                 ${icon('helpCircle', 'w-4 h-4 sm:w-5 sm:h-5')}
                             </button>
+                            <button onclick="state.showGamification = true; render();" 
+                                class="flex items-center gap-1 text-purple-600 active:text-purple-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
+                                ${icon('award', 'w-4 h-4 sm:w-5 sm:h-5')}
+                            </button>
                             <button onclick="if(confirm('Delete all data?')) resetAllData();" 
                                 class="flex items-center text-red-600 active:text-red-700 font-medium transition-colors text-xs touch-card p-1.5 sm:p-2">
                                 ${icon('trash', 'w-4 h-4 sm:w-5 sm:h-5')}
@@ -906,7 +911,7 @@ function render() {
         `;
     }
     
-    app.innerHTML = content + renderGuide();
+    app.innerHTML = content + renderGuide() + renderGamification();
 }
 
 // Initialize
