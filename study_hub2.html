@@ -714,6 +714,157 @@ function renderDeckDetails() {
     `;
 }
 
+function renderGamification() {
+    if (!state.showGamification) return '';
+    return `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50 fade-in">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto slide-up">
+                <div class="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex items-center justify-between">
+                    <h2 class="text-lg sm:text-2xl font-bold text-gray-900">🎮 Gamification & Rewards</h2>
+                    <button onclick="state.showGamification = false; render();" class="text-gray-500 active:text-gray-700 transition-colors p-2 touch-card">
+                        ${icon('x', 'w-5 h-5 sm:w-6 sm:h-6')}
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                    <section>
+                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">🎮 Gamification Features</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                            <div class="text-center p-3 sm:p-4 bg-yellow-50 rounded-lg">
+                                ${icon('trophy', 'w-8 h-8 sm:w-10 sm:h-10 text-yellow-600 mx-auto mb-2')}
+                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">XP Points</h4>
+                                <p class="text-xs sm:text-sm text-gray-700">Earn 5-15 XP per card based on your rating!</p>
+                            </div>
+                            <div class="text-center p-3 sm:p-4 bg-orange-50 rounded-lg">
+                                ${icon('flame', 'w-8 h-8 sm:w-10 sm:h-10 text-orange-500 mx-auto mb-2')}
+                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Daily Streaks</h4>
+                                <p class="text-xs sm:text-sm text-gray-700">Review every day to maintain your streak!</p>
+                            </div>
+                            <div class="text-center p-3 sm:p-4 bg-indigo-50 rounded-lg">
+                                ${icon('award', 'w-8 h-8 sm:w-10 sm:h-10 text-indigo-600 mx-auto mb-2')}
+                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Level System</h4>
+                                <p class="text-xs sm:text-sm text-gray-700">Accumulate XP to reach higher levels!</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 sm:p-5 border-2 border-yellow-200">
+                        <h3 class="text-lg sm:text-xl font-bold text-yellow-700 mb-2 sm:mb-3">⭐ How XP Works</h3>
+                        <div class="space-y-2 text-sm sm:text-base text-gray-700">
+                            <div class="flex items-center gap-3 bg-white rounded-lg p-3">
+                                <span class="text-2xl">🔴</span>
+                                <div class="flex-1">
+                                    <strong>Again (1):</strong> +5 XP
+                                    <p class="text-xs text-gray-600">You didn't remember, but you tried!</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white rounded-lg p-3">
+                                <span class="text-2xl">🟡</span>
+                                <div class="flex-1">
+                                    <strong>Hard (3):</strong> +10 XP
+                                    <p class="text-xs text-gray-600">Good effort, you'll get it next time!</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white rounded-lg p-3">
+                                <span class="text-2xl">🟢</span>
+                                <div class="flex-1">
+                                    <strong>Good (4):</strong> +15 XP
+                                    <p class="text-xs text-gray-600">Perfect! Optimal learning pace!</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white rounded-lg p-3">
+                                <span class="text-2xl">🔵</span>
+                                <div class="flex-1">
+                                    <strong>Easy (5):</strong> +15 XP
+                                    <p class="text-xs text-gray-600">You've mastered this card!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 sm:p-5 border-2 border-orange-200">
+                        <h3 class="text-lg sm:text-xl font-bold text-orange-700 mb-2 sm:mb-3">🔥 Streak System</h3>
+                        <p class="text-sm sm:text-base text-gray-700 mb-3">
+                            Build your streak by reviewing cards every single day! Your streak counter shows how many consecutive days you've studied.
+                        </p>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2 text-sm sm:text-base">Streak Benefits:</h4>
+                            <ul class="space-y-1 text-xs sm:text-sm text-gray-700">
+                                <li class="flex gap-2">
+                                    <span class="text-orange-600">🔥</span>
+                                    <span>Shows your dedication and consistency</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <span class="text-orange-600">🔥</span>
+                                    <span>Motivates you to study every day</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <span class="text-orange-600">🔥</span>
+                                    <span>Builds a powerful learning habit</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 sm:p-5 border-2 border-indigo-200">
+                        <h3 class="text-lg sm:text-xl font-bold text-indigo-700 mb-2 sm:mb-3">📊 Level Progression</h3>
+                        <p class="text-sm sm:text-base text-gray-700 mb-3">
+                            Your level increases as you accumulate XP! Each level represents your overall progress and dedication.
+                        </p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div class="bg-white rounded-lg p-3 text-center">
+                                <div class="text-xl sm:text-2xl font-bold text-gray-500">Level 1</div>
+                                <div class="text-xs sm:text-sm text-gray-600">0 - 99 XP</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 text-center">
+                                <div class="text-xl sm:text-2xl font-bold text-green-600">Level 2</div>
+                                <div class="text-xs sm:text-sm text-gray-600">100 - 249 XP</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 text-center">
+                                <div class="text-xl sm:text-2xl font-bold text-blue-600">Level 3</div>
+                                <div class="text-xs sm:text-sm text-gray-600">250 - 499 XP</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 text-center">
+                                <div class="text-xl sm:text-2xl font-bold text-purple-600">Level 4</div>
+                                <div class="text-xs sm:text-sm text-gray-600">500 - 999 XP</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 text-center">
+                                <div class="text-xl sm:text-2xl font-bold text-yellow-600">Level 5+</div>
+                                <div class="text-xs sm:text-sm text-gray-600">1000+ XP</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-red-50 rounded-xl p-4 sm:p-5 border-l-4 border-red-500">
+                        <h3 class="text-lg sm:text-xl font-bold text-red-600 mb-2 sm:mb-3">⚠️ Data Management</h3>
+                        <p class="text-sm sm:text-base text-gray-700 mb-2 sm:mb-3">All data is stored locally in your browser:</p>
+                        <ul class="space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-700 mb-3 sm:mb-4">
+                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Your data stays private and works offline</span></li>
+                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Clearing browser data will delete everything</span></li>
+                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Data doesn't sync across devices</span></li>
+                        </ul>
+                        <div class="bg-white rounded-lg p-3 sm:p-4">
+                            <p class="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Delete Options:</p>
+                            <ul class="space-y-1 text-xs sm:text-sm text-gray-700">
+                                <li><strong>Delete Card:</strong> Tap trash icon on any card</li>
+                                <li><strong>Delete Deck:</strong> Tap trash icon on any deck</li>
+                                <li><strong>Reset All:</strong> Click trash icon in header</li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6 safe-area-bottom">
+                    <button onclick="state.showGamification = false; render();" 
+                        class="w-full bg-purple-600 active:bg-purple-700 text-white font-semibold py-3 sm:py-4 rounded-lg transition-colors touch-card">
+                        Start Earning Rewards!
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function renderGuide() {
     if (!state.showGuide) return '';
     return `
