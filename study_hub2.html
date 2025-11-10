@@ -1,1161 +1,1713 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Study Hub">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#4F46E5">
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Study Hub" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta
+      name="theme-color"
+      content="
+#4F46E5"
+    />
     <title>Spaced-Repetition Study Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
-        body { overscroll-behavior: none; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .slide-up { animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        button, .clickable { -webkit-touch-callout: none; touch-action: manipulation; }
-        input, textarea { font-size: 16px; } /* Prevents zoom on iOS */
-        .safe-area-top { padding-top: env(safe-area-inset-top); }
-        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
-        .touch-card { transition: all 0.2s; }
-        .touch-card:active { transform: scale(0.98); opacity: 0.9; }
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+      .fade-in {
+        animation: fadeIn 0.3s ease-in;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .slide-up {
+        animation: slideUp 0.3s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      button,
+      .clickable {
+        -webkit-touch-callout: none;
+        touch-action: manipulation;
+      }
+      input,
+      textarea {
+        font-size: 16px;
+      }
+      .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+      }
+      .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .touch-card {
+        transition: all 0.2s;
+      }
+      .touch-card:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+      }
     </style>
-</head>
-<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen">
+  </head>
+  <body
+    class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen"
+  >
+    <div id="app"></div>
+    <script>
+      const icons = {
+        brain:
+          '<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/>',
+        trophy:
+          '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+        flame:
+          '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+        bookOpen:
+          '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+        plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+        calendar:
+          '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+        trendingUp:
+          '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+        target:
+          '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+        zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+        upload:
+          '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+        trash:
+          '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+        helpCircle:
+          '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+        x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+        checkCircle:
+          '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',
+        award:
+          '<path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>',
+        folder:
+          '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+        folderOpen:
+          '<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>',
+        chevronDown: '<path d="m6 9 6 6 6-6"/>',
+        chevronRight: '<path d="m9 18 6-6-6-6"/>',
+      };
 
-<div id="app"></div>
+      function icon(name, className = "w-5 h-5") {
+        return `<svg class="${className}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
+      }
 
-<script>
-// Lucide Icons SVG paths
-const icons = {
-    brain: '<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/>',
-    trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
-    flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
-    bookOpen: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
-    plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
-    calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
-    trendingUp: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
-    target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-    zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
-    upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
-    trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
-    helpCircle: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
-    x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
-    checkCircle: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',
-    award: '<path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>'
-};
-
-function icon(name, className = 'w-5 h-5') {
-    return `<svg class="${className}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
-}
-
-// SM-2 Algorithm
-const SM2 = {
-    calculate: (quality, easeFactor, interval, repetitions) => {
-        let newEF = easeFactor;
-        let newInterval = interval;
-        let newReps = repetitions;
-
-        if (quality >= 3) {
-            if (repetitions === 0) {
-                newInterval = 1;
-            } else if (repetitions === 1) {
-                newInterval = 6;
-            } else {
-                newInterval = Math.round(interval * easeFactor);
-            }
+      const SM2 = {
+        calculate: (quality, easeFactor, interval, repetitions) => {
+          let newEF = easeFactor,
+            newInterval = interval,
+            newReps = repetitions;
+          if (quality >= 3) {
+            if (repetitions === 0) newInterval = 1;
+            else if (repetitions === 1) newInterval = 6;
+            else newInterval = Math.round(interval * easeFactor);
             newReps = repetitions + 1;
-        } else {
+          } else {
             newReps = 0;
             newInterval = 1;
+          }
+          newEF =
+            easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+          if (newEF < 1.3) newEF = 1.3;
+          return {
+            easeFactor: newEF,
+            interval: newInterval,
+            repetitions: newReps,
+          };
+        },
+        getNextDueDate: (interval) => {
+          const date = new Date();
+          date.setDate(date.getDate() + interval);
+          return date.toISOString().split("T")[0];
+        },
+      };
+
+      const Storage = {
+        get: (key, defaultValue = null) => {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        },
+        set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+      };
+
+      const initializeUserData = () => {
+        const existingUser = Storage.get("user");
+        if (!existingUser) {
+          Storage.set("user", {
+            id: "1",
+            email: "student@studyhub.com",
+            name: "Student",
+            xp: 0,
+            streak: 0,
+            lastReviewDate: null, // 🧠 added for streak tracking
+            level: 1,
+          });
+          Storage.set("collections", []);
+          Storage.set("decks", []);
+          Storage.set("cards", []);
+        } else {
+          // ✅ ensure older users get the new field too
+          if (!("lastReviewDate" in existingUser)) {
+            existingUser.lastReviewDate = null;
+            Storage.set("user", existingUser);
+          }
+        }
+      };
+
+      let state = {
+        user: null,
+        collections: [],
+        decks: [],
+        cards: [],
+        currentView: "dashboard",
+        selectedCollection: null,
+        selectedDeck: null,
+        reviewMode: false,
+        currentCardIndex: 0,
+        showAnswer: false,
+        reviewQueue: [],
+        showGuide: false,
+        showGamification: false,
+        expandedCollections: {},
+      };
+
+      function loadData() {
+        state.user = Storage.get("user");
+        state.collections = Storage.get("collections", []);
+        state.decks = Storage.get("decks", []);
+        state.cards = Storage.get("cards", []);
+      }
+
+      function getTodaysDueCards() {
+        const today = new Date().toISOString().split("T")[0];
+        return state.cards.filter((card) => card.nextDue <= today);
+      }
+
+      function getThisWeekReviews() {
+        const today = new Date();
+        const weekAgo = new Date(today);
+        weekAgo.setDate(today.getDate() - 7);
+        return state.cards.filter((card) => {
+          const lastReview = new Date(card.nextDue);
+          return card.repetitions > 0 && lastReview >= weekAgo;
+        }).length;
+      }
+
+      function startReview(deckId = null, collectionId = null) {
+        let queue;
+        const today = new Date().toISOString().split("T")[0];
+        if (collectionId) {
+          const collectionDeckIds = state.decks
+            .filter((d) => d.collectionId === collectionId)
+            .map((d) => d.id);
+          queue = state.cards.filter(
+            (card) =>
+              collectionDeckIds.includes(card.deckId) && card.nextDue <= today
+          );
+        } else if (deckId) {
+          queue = state.cards.filter(
+            (card) => card.deckId === deckId && card.nextDue <= today
+          );
+        } else {
+          queue = getTodaysDueCards();
+        }
+        if (queue.length === 0) {
+          alert("No cards due for review!");
+          return;
+        }
+        state.reviewQueue = queue;
+        state.currentCardIndex = 0;
+        state.showAnswer = false;
+        state.reviewMode = true;
+        render();
+      }
+      function rateCard(quality) {
+        const card = state.reviewQueue[state.currentCardIndex];
+        const { easeFactor, interval, repetitions } = SM2.calculate(
+          quality,
+          card.easeFactor,
+          card.interval,
+          card.repetitions
+        );
+
+        const updatedCard = {
+          ...card,
+          easeFactor,
+          interval,
+          repetitions,
+          nextDue: SM2.getNextDueDate(interval),
+        };
+
+        // ✅ Update cards
+        state.cards = state.cards.map((c) =>
+          c.id === card.id ? updatedCard : c
+        );
+        Storage.set("cards", state.cards);
+
+        // 💥 XP + Level system
+        const xpGain = quality >= 4 ? 15 : quality >= 3 ? 10 : 5;
+        const oldLevel = state.user.level;
+        state.user.xp += xpGain;
+        const newLevel = calculateLevel(state.user.xp);
+        state.user.level = newLevel;
+        Storage.set("user", state.user);
+
+        if (newLevel > oldLevel) {
+          setTimeout(
+            () =>
+              alert(
+                `🎉 LEVEL UP! You've reached Level ${newLevel}! 🎉\n\nKeep up the great work!`
+              ),
+            300
+          );
         }
 
-        newEF = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-        if (newEF < 1.3) newEF = 1.3;
+        // 🔥 Streak system
+        const today = new Date().toISOString().split("T")[0];
+        const lastReviewDate = state.user.lastReviewDate;
 
-        return { easeFactor: newEF, interval: newInterval, repetitions: newReps };
-    },
+        if (lastReviewDate !== today) {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-    getNextDueDate: (interval) => {
-        const date = new Date();
-        date.setDate(date.getDate() + interval);
-        return date.toISOString().split('T')[0];
-    }
-};
+          if (lastReviewDate === yesterdayStr) {
+            state.user.streak += 1;
+            showStreakPopup(`🔥 Streak +1! (${state.user.streak} days)`);
+          } else {
+            state.user.streak = 1;
+            showStreakPopup(`🔥 New Streak Started!`);
+          }
 
-// Storage
-const Storage = {
-    get: (key, defaultValue = null) => {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
-    },
-    set: (key, value) => {
-        localStorage.setItem(key, JSON.stringify(value));
-    }
-};
+          state.user.lastReviewDate = today;
+          Storage.set("user", state.user);
+        }
 
-// Initialize User Data
-const initializeUserData = () => {
-    const existingUser = Storage.get('user');
-    if (!existingUser) {
-        Storage.set('user', { id: '1', email: 'student@studyhub.com', name: 'Student', xp: 0, streak: 0, level: 1 });
-        Storage.set('decks', []);
-        Storage.set('cards', []);
-    }
-};
+        // 🎯 Handle next card or finish
+        if (state.currentCardIndex < state.reviewQueue.length - 1) {
+          state.currentCardIndex++;
+          state.showAnswer = false;
+          render();
+        } else {
+          state.reviewMode = false;
+          state.currentView = "dashboard";
+          alert(
+            `Review complete! You earned ${
+              xpGain * state.reviewQueue.length
+            } XP!`
+          );
+          render();
+        }
+      }
 
-// App State
-let state = {
-    user: null,
-    decks: [],
-    cards: [],
-    currentView: 'dashboard',
-    selectedDeck: null,
-    reviewMode: false,
-    currentCardIndex: 0,
-    showAnswer: false,
-    reviewQueue: [],
-    showGuide: false,
-    showGamification: false
-};
+      function calculateLevel(xp) {
+        if (xp < 2000) return 1;
+        if (xp < 3000) return 2;
+        if (xp < 4250) return 3;
+        if (xp < 5750) return 4;
+        if (xp < 7500) return 5;
+        if (xp < 9500) return 6;
+        if (xp < 11750) return 7;
+        if (xp < 14250) return 8;
+        let level = 9,
+          threshold = 14250,
+          increment = 2750;
+        while (xp >= threshold + increment) {
+          threshold += increment;
+          increment += 250;
+          level++;
+        }
+        return level;
+      }
 
-function loadData() {
-    state.user = Storage.get('user');
-    state.decks = Storage.get('decks', []);
-    state.cards = Storage.get('cards', []);
-}
+      function getXPForNextLevel(currentLevel) {
+        if (currentLevel === 1) return 2000;
+        if (currentLevel === 2) return 1000;
+        if (currentLevel === 3) return 1250;
+        if (currentLevel === 4) return 1500;
+        if (currentLevel === 5) return 1750;
+        if (currentLevel === 6) return 2000;
+        if (currentLevel === 7) return 2250;
+        if (currentLevel === 8) return 2500;
+        return 2500 + (currentLevel - 8) * 250;
+      }
 
-function getTodaysDueCards() {
-    const today = new Date().toISOString().split('T')[0];
-    return state.cards.filter(card => card.nextDue <= today);
-}
+      function getXPProgress() {
+        const currentLevel = state.user.level;
+        const totalXP = state.user.xp;
+        let xpForCurrentLevel = 0;
+        for (let i = 1; i < currentLevel; i++) {
+          xpForCurrentLevel += getXPForNextLevel(i);
+        }
+        const xpIntoCurrentLevel = totalXP - xpForCurrentLevel;
+        const xpNeededForNext = getXPForNextLevel(currentLevel);
+        const progressPercent = Math.min(
+          (xpIntoCurrentLevel / xpNeededForNext) * 100,
+          100
+        );
+        return {
+          current: xpIntoCurrentLevel,
+          needed: xpNeededForNext,
+          percent: progressPercent,
+        };
+      }
 
-function getThisWeekReviews() {
-    const today = new Date();
-    const weekAgo = new Date(today);
-    weekAgo.setDate(today.getDate() - 7);
-    
-    return state.cards.filter(card => {
-        const lastReview = new Date(card.nextDue);
-        return card.repetitions > 0 && lastReview >= weekAgo;
-    }).length;
-}
-
-function startReview(deckId = null) {
-    let queue;
-    if (deckId) {
-        const today = new Date().toISOString().split('T')[0];
-        queue = state.cards.filter(card => card.deckId === deckId && card.nextDue <= today);
-    } else {
-        queue = getTodaysDueCards();
-    }
-    
-    if (queue.length === 0) {
-        alert('No cards due for review!');
-        return;
-    }
-    
-    state.reviewQueue = queue;
-    state.currentCardIndex = 0;
-    state.showAnswer = false;
-    state.reviewMode = true;
-    state.showGuide = false;
-    state.showGamification = false;
-    render();
-}
-
-function rateCard(quality) {
-    const card = state.reviewQueue[state.currentCardIndex];
-    const { easeFactor, interval, repetitions } = SM2.calculate(quality, card.easeFactor, card.interval, card.repetitions);
-
-    const updatedCard = { ...card, easeFactor, interval, repetitions, nextDue: SM2.getNextDueDate(interval) };
-    state.cards = state.cards.map(c => c.id === card.id ? updatedCard : c);
-    Storage.set('cards', state.cards);
-
-    const xpGain = quality >= 4 ? 15 : quality >= 3 ? 10 : 5;
-    const oldLevel = state.user.level;
-    state.user.xp += xpGain;
-    
-    // Calculate new level based on cumulative XP
-    const newLevel = calculateLevel(state.user.xp);
-    state.user.level = newLevel;
-    
-    Storage.set('user', state.user);
-
-    // Check for level up
-    if (newLevel > oldLevel) {
-        setTimeout(() => {
-            alert(`🎉 LEVEL UP! You've reached Level ${newLevel}! 🎉\n\nKeep up the great work!`);
-        }, 300);
-    }
-
-    if (state.currentCardIndex < state.reviewQueue.length - 1) {
-        state.currentCardIndex++;
-        state.showAnswer = false;
+      function createCollection(title, description) {
+        if (!title) return;
+        const newCollection = {
+          id: Date.now().toString(),
+          userId: state.user.id,
+          title,
+          description,
+          deckCount: 0,
+          cardCount: 0,
+          dueToday: 0,
+        };
+        state.collections.push(newCollection);
+        Storage.set("collections", state.collections);
+        state.currentView = "dashboard";
         render();
-    } else {
-        state.reviewMode = false;
-        state.currentView = 'dashboard';
-        alert(`Review complete! You earned ${xpGain * state.reviewQueue.length} XP!`);
+      }
+
+      function createDeck(title, courseCode, collectionId = null) {
+        if (!title) return;
+        const newDeck = {
+          id: Date.now().toString(),
+          userId: state.user.id,
+          collectionId,
+          title,
+          courseCode,
+          cardCount: 0,
+          dueToday: 0,
+        };
+        state.decks.push(newDeck);
+        Storage.set("decks", state.decks);
+        if (collectionId) {
+          state.collections = state.collections.map((c) =>
+            c.id === collectionId ? { ...c, deckCount: c.deckCount + 1 } : c
+          );
+          Storage.set("collections", state.collections);
+        }
+        state.currentView = "dashboard";
+        state.selectedCollection = null;
         render();
-    }
-}
+      }
 
-function calculateLevel(xp) {
-    if (xp < 2000) return 1;
-    if (xp < 3000) return 2;  // 2000 + 1000
-    if (xp < 4250) return 3;  // 3000 + 1250
-    if (xp < 5750) return 4;  // 4250 + 1500
-    if (xp < 7500) return 5;  // 5750 + 1750
-    if (xp < 9500) return 6;  // 7500 + 2000
-    if (xp < 11750) return 7; // 9500 + 2250
-    if (xp < 14250) return 8; // 11750 + 2500
-    
-    // Level 9+: continues pattern (2750, 3000, 3250...)
-    let level = 9;
-    let threshold = 14250;
-    let increment = 2750;
-    
-    while (xp >= threshold + increment) {
-        threshold += increment;
-        increment += 250;
-        level++;
-    }
-    
-    return level;
-}
+      function createCard(front, back, tags) {
+        if (!front || !back || !state.selectedDeck) return;
+        const newCard = {
+          id: Date.now().toString(),
+          deckId: state.selectedDeck.id,
+          front,
+          back,
+          tags: tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t),
+          easeFactor: 2.5,
+          interval: 1,
+          repetitions: 0,
+          nextDue: new Date().toISOString().split("T")[0],
+        };
+        state.cards.push(newCard);
+        Storage.set("cards", state.cards);
+        state.decks = state.decks.map((d) =>
+          d.id === state.selectedDeck.id
+            ? { ...d, cardCount: d.cardCount + 1, dueToday: d.dueToday + 1 }
+            : d
+        );
+        Storage.set("decks", state.decks);
+        const deck = state.decks.find((d) => d.id === state.selectedDeck.id);
+        if (deck && deck.collectionId) {
+          state.collections = state.collections.map((c) =>
+            c.id === deck.collectionId
+              ? { ...c, cardCount: c.cardCount + 1, dueToday: c.dueToday + 1 }
+              : c
+          );
+          Storage.set("collections", state.collections);
+        }
+        render();
+      }
 
-function getXPForNextLevel(currentLevel) {
-    if (currentLevel === 1) return 2000;
-    if (currentLevel === 2) return 1000;
-    if (currentLevel === 3) return 1250;
-    if (currentLevel === 4) return 1500;
-    if (currentLevel === 5) return 1750;
-    if (currentLevel === 6) return 2000;
-    if (currentLevel === 7) return 2250;
-    if (currentLevel === 8) return 2500;
-    
-    // Level 9+: pattern continues with +250 each time
-    return 2500 + (currentLevel - 8) * 250;
-}
+      function deleteCollection(collectionId) {
+        if (
+          !confirm(
+            "Are you sure you want to delete this collection and ALL its decks and cards?"
+          )
+        )
+          return;
+        const deckIdsToDelete = state.decks
+          .filter((d) => d.collectionId === collectionId)
+          .map((d) => d.id);
+        state.cards = state.cards.filter(
+          (c) => !deckIdsToDelete.includes(c.deckId)
+        );
+        state.decks = state.decks.filter(
+          (d) => d.collectionId !== collectionId
+        );
+        state.collections = state.collections.filter(
+          (c) => c.id !== collectionId
+        );
+        Storage.set("collections", state.collections);
+        Storage.set("decks", state.decks);
+        Storage.set("cards", state.cards);
+        state.currentView = "dashboard";
+        state.selectedCollection = null;
+        render();
+      }
 
-function getXPProgress() {
-    const currentLevel = state.user.level;
-    const totalXP = state.user.xp;
-    
-    // Calculate XP thresholds
-    let xpForCurrentLevel = 0;
-    for (let i = 1; i < currentLevel; i++) {
-        xpForCurrentLevel += getXPForNextLevel(i);
-    }
-    
-    const xpIntoCurrentLevel = totalXP - xpForCurrentLevel;
-    const xpNeededForNext = getXPForNextLevel(currentLevel);
-    const progressPercent = Math.min((xpIntoCurrentLevel / xpNeededForNext) * 100, 100);
-    
-    return {
-        current: xpIntoCurrentLevel,
-        needed: xpNeededForNext,
-        percent: progressPercent
-    };
-}
+      function deleteDeck(deckId) {
+        if (
+          !confirm(
+            "Are you sure you want to delete this deck and all its cards?"
+          )
+        )
+          return;
+        const deck = state.decks.find((d) => d.id === deckId);
+        const cardCount = state.cards.filter((c) => c.deckId === deckId).length;
+        state.decks = state.decks.filter((d) => d.id !== deckId);
+        state.cards = state.cards.filter((c) => c.deckId !== deckId);
+        Storage.set("decks", state.decks);
+        Storage.set("cards", state.cards);
+        if (deck && deck.collectionId) {
+          state.collections = state.collections.map((c) =>
+            c.id === deck.collectionId
+              ? {
+                  ...c,
+                  deckCount: c.deckCount - 1,
+                  cardCount: c.cardCount - cardCount,
+                }
+              : c
+          );
+          Storage.set("collections", state.collections);
+        }
+        state.currentView = "dashboard";
+        state.selectedDeck = null;
+        render();
+      }
 
-function createDeck(title, courseCode) {
-    if (!title) return;
-    const newDeck = {
-        id: Date.now().toString(),
-        userId: state.user.id,
-        title,
-        courseCode,
-        cardCount: 0,
-        dueToday: 0
-    };
-    state.decks.push(newDeck);
-    Storage.set('decks', state.decks);
-    state.currentView = 'dashboard';
-    render();
-}
+      function deleteCard(cardId) {
+        if (!confirm("Are you sure you want to delete this card?")) return;
+        const card = state.cards.find((c) => c.id === cardId);
+        state.cards = state.cards.filter((c) => c.id !== cardId);
+        Storage.set("cards", state.cards);
+        state.decks = state.decks.map((d) =>
+          d.id === card.deckId ? { ...d, cardCount: d.cardCount - 1 } : d
+        );
+        Storage.set("decks", state.decks);
+        const deck = state.decks.find((d) => d.id === card.deckId);
+        if (deck && deck.collectionId) {
+          state.collections = state.collections.map((c) =>
+            c.id === deck.collectionId
+              ? { ...c, cardCount: c.cardCount - 1 }
+              : c
+          );
+          Storage.set("collections", state.collections);
+        }
+        render();
+      }
 
-function createCard(front, back, tags) {
-    if (!front || !back || !state.selectedDeck) return;
-    const newCard = {
-        id: Date.now().toString(),
-        deckId: state.selectedDeck.id,
-        front, back,
-        tags: tags.split(',').map(t => t.trim()).filter(t => t),
-        easeFactor: 2.5,
-        interval: 1,
-        repetitions: 0,
-        nextDue: new Date().toISOString().split('T')[0]
-    };
-    state.cards.push(newCard);
-    Storage.set('cards', state.cards);
-    
-    state.decks = state.decks.map(d => 
-        d.id === state.selectedDeck.id ? { ...d, cardCount: d.cardCount + 1, dueToday: d.dueToday + 1 } : d
-    );
-    Storage.set('decks', state.decks);
-    render();
-}
+      function resetAllData() {
+        if (
+          !confirm(
+            "⚠️ This will delete ALL your collections, decks, cards, and progress. Are you absolutely sure?"
+          )
+        )
+          return;
+        if (!confirm("This action cannot be undone. Click OK to proceed."))
+          return;
+        localStorage.clear();
+        location.reload();
+      }
 
-function deleteDeck(deckId) {
-    if (!confirm('Are you sure you want to delete this deck and all its cards?')) return;
-    state.decks = state.decks.filter(d => d.id !== deckId);
-    state.cards = state.cards.filter(c => c.deckId !== deckId);
-    Storage.set('decks', state.decks);
-    Storage.set('cards', state.cards);
-    state.currentView = 'dashboard';
-    state.selectedDeck = null;
-    render();
-}
+      function toggleCollection(collectionId) {
+        state.expandedCollections[collectionId] =
+          !state.expandedCollections[collectionId];
+        render();
+      }
 
-function deleteCard(cardId) {
-    if (!confirm('Are you sure you want to delete this card?')) return;
-    const card = state.cards.find(c => c.id === cardId);
-    state.cards = state.cards.filter(c => c.id !== cardId);
-    Storage.set('cards', state.cards);
-    
-    state.decks = state.decks.map(d => 
-        d.id === card.deckId ? { ...d, cardCount: d.cardCount - 1 } : d
-    );
-    Storage.set('decks', state.decks);
-    render();
-}
-
-function resetAllData() {
-    if (!confirm('⚠️ This will delete ALL your decks, cards, and progress. Are you absolutely sure?')) return;
-    if (!confirm('This action cannot be undone. Click OK to proceed.')) return;
-    localStorage.clear();
-    location.reload();
-}
-
-function handleCSVImport(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const text = e.target.result;
-        const lines = text.split('\n').slice(1);
-        
-        const newCards = lines.filter(line => line.trim()).map((line, index) => {
-            const [front, back, tags] = line.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
-            return {
+      function handleCSVImport(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target.result;
+          const lines = text.split("\n").slice(1);
+          const newCards = lines
+            .filter((line) => line.trim())
+            .map((line, index) => {
+              const [front, back, tags] = line
+                .split(",")
+                .map((s) => s.trim().replace(/^"|"$/g, ""));
+              return {
                 id: (Date.now() + index).toString(),
                 deckId: state.selectedDeck.id,
-                front, back,
-                tags: tags ? tags.split(';').map(t => t.trim()) : [],
-                easeFactor: 2.5, interval: 1, repetitions: 0,
-                nextDue: new Date().toISOString().split('T')[0]
-            };
-        });
+                front,
+                back,
+                tags: tags ? tags.split(";").map((t) => t.trim()) : [],
+                easeFactor: 2.5,
+                interval: 1,
+                repetitions: 0,
+                nextDue: new Date().toISOString().split("T")[0],
+              };
+            });
+          state.cards.push(...newCards);
+          Storage.set("cards", state.cards);
+          state.decks = state.decks.map((d) =>
+            d.id === state.selectedDeck.id
+              ? {
+                  ...d,
+                  cardCount: d.cardCount + newCards.length,
+                  dueToday: d.dueToday + newCards.length,
+                }
+              : d
+          );
+          Storage.set("decks", state.decks);
+          const deck = state.decks.find((d) => d.id === state.selectedDeck.id);
+          if (deck && deck.collectionId) {
+            state.collections = state.collections.map((c) =>
+              c.id === deck.collectionId
+                ? {
+                    ...c,
+                    cardCount: c.cardCount + newCards.length,
+                    dueToday: c.dueToday + newCards.length,
+                  }
+                : c
+            );
+            Storage.set("collections", state.collections);
+          }
+          alert(`Imported ${newCards.length} cards successfully!`);
+          render();
+        };
+        reader.readAsText(file);
+      }
 
-        state.cards.push(...newCards);
-        Storage.set('cards', state.cards);
+      // RENDER FUNCTIONS CONTINUE IN NEXT MESSAGE DUE TO LENGTH
 
-        state.decks = state.decks.map(d => 
-            d.id === state.selectedDeck.id 
-                ? { ...d, cardCount: d.cardCount + newCards.length, dueToday: d.dueToday + newCards.length }
-                : d
-        );
-        Storage.set('decks', state.decks);
-        alert(`Imported ${newCards.length} cards successfully!`);
-        render();
-    };
-    reader.readAsText(file);
-}
+      // RENDER FUNCTIONS (Continuing from where you stopped)
 
-// Render Functions
-function renderReviewMode() {
-    const card = state.reviewQueue[state.currentCardIndex];
-    return `
-        <div class="max-w-2xl mx-auto pt-4 px-3 pb-safe">
-            <div class="bg-white rounded-2xl shadow-xl p-4 sm:p-8 slide-up">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-xs sm:text-sm font-medium text-gray-600">
-                        Card ${state.currentCardIndex + 1} of ${state.reviewQueue.length}
-                    </span>
-                    <div class="flex gap-2">
-                        ${icon('trophy', 'w-4 h-4 sm:w-5 sm:h-5 text-yellow-500')}
-                        <span class="font-semibold text-gray-700 text-sm sm:text-base">${state.user.xp} XP</span>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 sm:p-8 mb-4 min-h-[250px] sm:min-h-64 flex items-center justify-center text-center touch-card">
-                    <p class="text-xl sm:text-2xl text-white font-medium break-words">
-                        ${state.showAnswer ? card.back : card.front}
-                    </p>
-                </div>
-
-                ${!state.showAnswer ? `
-                    <button onclick="state.showAnswer = true; render();" 
-                        class="w-full bg-indigo-600 active:bg-indigo-700 text-white font-semibold py-4 sm:py-4 rounded-xl transition-colors text-base sm:text-lg touch-card">
-                        Show Answer
-                    </button>
-                ` : `
-                    <div class="space-y-3">
-                        <p class="text-center text-xs sm:text-sm font-medium text-gray-700 mb-3">How well did you know this?</p>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <button onclick="rateCard(1)" class="bg-red-100 active:bg-red-200 text-red-700 font-semibold py-4 rounded-lg transition-colors text-sm sm:text-base touch-card">Again</button>
-                            <button onclick="rateCard(3)" class="bg-yellow-100 active:bg-yellow-200 text-yellow-700 font-semibold py-4 rounded-lg transition-colors text-sm sm:text-base touch-card">Hard</button>
-                            <button onclick="rateCard(4)" class="bg-green-100 active:bg-green-200 text-green-700 font-semibold py-4 rounded-lg transition-colors text-sm sm:text-base touch-card">Good</button>
-                            <button onclick="rateCard(5)" class="bg-blue-100 active:bg-blue-200 text-blue-700 font-semibold py-4 rounded-lg transition-colors text-sm sm:text-base touch-card">Easy</button>
+      function renderReviewMode() {
+        const card = state.reviewQueue[state.currentCardIndex];
+        return `
+                <div class="max-w-2xl mx-auto pt-4 px-3 pb-safe">
+                    <div class="bg-white rounded-2xl shadow-xl p-4 sm:p-8 slide-up">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-xs sm:text-sm font-medium text-gray-600">
+                                Card ${state.currentCardIndex + 1} of ${
+          state.reviewQueue.length
+        }
+                            </span>
+                            <div class="flex gap-2">
+                                ${icon(
+                                  "trophy",
+                                  "w-4 h-4 sm:w-5 sm:h-5 text-yellow-500"
+                                )}
+                                <span class="font-semibold text-gray-700 text-sm sm:text-base">${
+                                  state.user.xp
+                                } XP</span>
+                            </div>
                         </div>
-                    </div>
-                `}
-            </div>
-        </div>
-    `;
-}
 
-function renderDashboard() {
-    const dueToday = getTodaysDueCards().length;
-    const thisWeek = getThisWeekReviews();
-    const xpProgress = getXPProgress();
-    
-    return `
-        <div class="space-y-4 sm:space-y-8 pb-safe">
-            <!-- XP Progress Bar -->
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg sm:text-xl font-bold text-indigo-600">Level ${state.user.level}</span>
-                        <span class="text-xs sm:text-sm text-gray-600">${state.user.xp} Total XP</span>
-                    </div>
-                    <span class="text-xs sm:text-sm text-gray-600 font-medium">${xpProgress.current} / ${xpProgress.needed} XP</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-4 sm:h-5 overflow-hidden">
-                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-full rounded-full transition-all duration-500 flex items-center justify-end px-2" style="width: ${xpProgress.percent}%">
-                        <span class="text-white text-xs font-bold">${Math.round(xpProgress.percent)}%</span>
-                    </div>
-                </div>
-                <p class="text-xs sm:text-sm text-gray-500 mt-2 text-center">${xpProgress.needed - xpProgress.current} XP to Level ${state.user.level + 1}</p>
-            </div>
-            
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-indigo-500">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-xs sm:text-sm text-gray-600 font-medium">Due Today</p>
-                            <p class="text-2xl sm:text-3xl font-bold text-gray-900">${dueToday}</p>
+                        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 sm:p-8 mb-4 min-h-[250px] sm:min-h-64 flex items-center justify-center text-center touch-card">
+                            <p class="text-xl sm:text-2xl text-white font-medium break-words">
+                                ${state.showAnswer ? card.back : card.front}
+                            </p>
                         </div>
-                        ${icon('calendar', 'w-8 h-8 sm:w-10 sm:h-10 text-indigo-500 opacity-80 mt-2 sm:mt-0')}
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-purple-500">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-xs sm:text-sm text-gray-600 font-medium">Total Decks</p>
-                            <p class="text-2xl sm:text-3xl font-bold text-gray-900">${state.decks.length}</p>
-                        </div>
-                        ${icon('bookOpen', 'w-8 h-8 sm:w-10 sm:h-10 text-purple-500 opacity-80 mt-2 sm:mt-0')}
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-green-500">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-xs sm:text-sm text-gray-600 font-medium">Total Cards</p>
-                            <p class="text-2xl sm:text-3xl font-bold text-gray-900">${state.cards.length}</p>
-                        </div>
-                        ${icon('target', 'w-8 h-8 sm:w-10 sm:h-10 text-green-500 opacity-80 mt-2 sm:mt-0')}
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-yellow-500">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-xs sm:text-sm text-gray-600 font-medium">This Week</p>
-                            <p class="text-2xl sm:text-3xl font-bold text-gray-900">${thisWeek}</p>
-                        </div>
-                        ${icon('trendingUp', 'w-8 h-8 sm:w-10 sm:h-10 text-yellow-500 opacity-80 mt-2 sm:mt-0')}
-                    </div>
-                </div>
-            </div>
 
-            <!-- Quick Actions -->
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                    <button onclick="startReview()" 
-                        class="flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 active:from-indigo-600 active:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all touch-card">
-                        ${icon('zap', 'w-5 h-5 sm:w-6 sm:h-6')} <span class="text-sm sm:text-base">Start Daily Review</span>
-                    </button>
-                    <button onclick="state.currentView = 'createDeck'; render();" 
-                        class="flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 active:from-green-600 active:to-emerald-700 text-white font-semibold py-4 px-6 rounded-xl transition-all touch-card">
-                        ${icon('plus', 'w-5 h-5 sm:w-6 sm:h-6')} <span class="text-sm sm:text-base">Create New Deck</span>
-                    </button>
-                    <button onclick="state.currentView = 'analytics'; render();" 
-                        class="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-cyan-600 active:from-blue-600 active:to-cyan-700 text-white font-semibold py-4 px-6 rounded-xl transition-all touch-card">
-                        ${icon('trendingUp', 'w-5 h-5 sm:w-6 sm:h-6')} <span class="text-sm sm:text-base">View Analytics</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Decks List -->
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Your Decks</h2>
-                ${state.decks.length === 0 ? `
-                    <div class="text-center py-8 sm:py-12">
-                        ${icon('bookOpen', 'w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4')}
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-600 mb-2">No decks yet</h3>
-                        <p class="text-sm sm:text-base text-gray-500 mb-4">Create your first deck to start studying!</p>
-                        <button onclick="state.currentView = 'createDeck'; render();" 
-                            class="bg-indigo-600 active:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
-                            Create Your First Deck
-                        </button>
-                    </div>
-                ` : `
-                    <div class="grid grid-cols-1 gap-3 sm:gap-4">
-                        ${state.decks.map(deck => `
-                            <div onclick="state.selectedDeck = ${JSON.stringify(deck).replace(/"/g, '&quot;')}; state.currentView = 'deckDetails'; render();" 
-                                class="border-2 border-gray-200 active:border-indigo-500 rounded-xl p-4 sm:p-5 cursor-pointer transition-all relative group touch-card">
-                                <button onclick="event.stopPropagation(); deleteDeck('${deck.id}');" 
-                                    class="absolute top-3 right-3 bg-red-100 active:bg-red-200 text-red-600 p-2 rounded-lg">
-                                    ${icon('trash', 'w-4 h-4')}
-                                </button>
-                                <div class="flex items-start justify-between mb-3 pr-10">
-                                    <div>
-                                        <h3 class="font-bold text-gray-900 text-base sm:text-lg">${deck.title}</h3>
-                                        <p class="text-xs sm:text-sm text-gray-600">${deck.courseCode}</p>
-                                    </div>
-                                    ${icon('bookOpen', 'w-5 h-5 sm:w-6 sm:h-6 text-indigo-500')}
-                                </div>
-                                <div class="flex items-center justify-between text-xs sm:text-sm">
-                                    <span class="text-gray-600">${deck.cardCount} cards</span>
-                                    <span class="bg-red-100 text-red-700 px-2 sm:px-3 py-1 rounded-full font-semibold">${deck.dueToday} due</span>
+                        ${
+                          !state.showAnswer
+                            ? `
+                            <button onclick="state.showAnswer = true; render();"
+                                class="w-full bg-indigo-600 active:bg-indigo-700 text-white font-semibold py-4 rounded-xl transition-colors text-base sm:text-lg touch-card">
+                                Show Answer
+                            </button>
+                        `
+                            : `
+                            <div class="space-y-3">
+                                <p class="text-center text-xs sm:text-sm font-medium text-gray-700 mb-3">How well did you know this?</p>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    <button onclick="rateCard(1)" class="bg-red-100 active:bg-red-200 text-red-700 font-semibold py-4 rounded-lg transition-colors text-sm sm:text-base touch-card">Again</button>
+                                    <button onclick="rateCard(3)" class="bg-yellow-100 active:bg-yellow-200 text-yellow-700 font-semibold py-4 rounded-lg transition-colors text-sm sm:text-base touch-card">Hard</button>
+                                    <button onclick="rateCard(4)" class="bg-green-100 active:bg-green-200 text-green-700 font-semibold py-4 rounded-lg transition-colors text-sm sm:text-base touch-card">Good</button>
+                                    <button onclick="rateCard(5)" class="bg-blue-100 active:bg-blue-200 text-blue-700 font-semibold py-4 rounded-lg transition-colors text-sm sm:text-base touch-card">Easy</button>
                                 </div>
                             </div>
-                        `).join('')}
+                        `
+                        }
                     </div>
-                `}
-            </div>
-        </div>
-    `;
-}
+                </div>
+            `;
+      }
 
-function renderCreateDeck() {
-    return `
-        <div class="bg-white rounded-xl shadow-md p-4 sm:p-8 max-w-2xl mx-auto">
-            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Create New Deck</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Deck Title</label>
-                    <input type="text" id="deckTitle" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" placeholder="e.g., Computer Science 101">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Course Code</label>
-                    <input type="text" id="deckCode" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" placeholder="e.g., CS101">
-                </div>
-                <div class="flex flex-col sm:flex-row gap-3 pt-4">
-                    <button onclick="createDeck(document.getElementById('deckTitle').value, document.getElementById('deckCode').value);" 
-                        class="flex-1 bg-indigo-600 active:bg-indigo-700 text-white font-semibold py-4 rounded-lg transition-colors touch-card">
-                        Create Deck
-                    </button>
-                    <button onclick="state.currentView = 'dashboard'; render();" 
-                        class="flex-1 bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold py-4 rounded-lg transition-colors touch-card">
-                        Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
+      function renderDashboard() {
+        const dueToday = getTodaysDueCards().length;
+        const thisWeek = getThisWeekReviews();
+        const xpProgress = getXPProgress();
+        const standaloneDecks = state.decks.filter((d) => !d.collectionId);
 
-function renderAnalytics() {
-    const totalReviews = state.cards.reduce((sum, card) => sum + card.repetitions, 0);
-    const averageEF = state.cards.length > 0 
-        ? (state.cards.reduce((sum, card) => sum + card.easeFactor, 0) / state.cards.length).toFixed(2)
-        : '2.50';
-    const cardsLearning = state.cards.filter(c => c.repetitions > 0 && c.repetitions < 3).length;
-    const cardsMature = state.cards.filter(c => c.repetitions >= 3).length;
-    const cardsNew = state.cards.filter(c => c.repetitions === 0).length;
-    
-    return `
-        <div class="space-y-4 sm:space-y-6 pb-safe">
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <div class="flex items-center justify-between mb-4 sm:mb-6">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900">📊 Your Analytics</h2>
-                    <button onclick="state.currentView = 'dashboard'; render();" 
-                        class="bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
-                        Back
-                    </button>
-                </div>
-                
-                <!-- Overall Stats -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-                    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 text-center">
-                        <div class="text-2xl sm:text-3xl font-bold text-indigo-600 mb-1">${state.user.xp}</div>
-                        <div class="text-xs sm:text-sm text-gray-600 font-medium">Total XP</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 text-center">
-                        <div class="text-2xl sm:text-3xl font-bold text-orange-600 mb-1">${state.user.streak}</div>
-                        <div class="text-xs sm:text-sm text-gray-600 font-medium">Day Streak</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center">
-                        <div class="text-2xl sm:text-3xl font-bold text-purple-600 mb-1">${totalReviews}</div>
-                        <div class="text-xs sm:text-sm text-gray-600 font-medium">Reviews</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center">
-                        <div class="text-2xl sm:text-3xl font-bold text-green-600 mb-1">${state.user.level}</div>
-                        <div class="text-xs sm:text-sm text-gray-600 font-medium">Level</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card Distribution -->
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Card Distribution</h3>
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex justify-between mb-2">
-                            <span class="text-sm sm:text-base text-gray-700 font-medium">New Cards</span>
-                            <span class="text-sm sm:text-base font-bold text-blue-600">${cardsNew}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-blue-500 h-3 rounded-full" style="width: ${state.cards.length > 0 ? (cardsNew / state.cards.length * 100) : 0}%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between mb-2">
-                            <span class="text-sm sm:text-base text-gray-700 font-medium">Learning</span>
-                            <span class="text-sm sm:text-base font-bold text-yellow-600">${cardsLearning}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-yellow-500 h-3 rounded-full" style="width: ${state.cards.length > 0 ? (cardsLearning / state.cards.length * 100) : 0}%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between mb-2">
-                            <span class="text-sm sm:text-base text-gray-700 font-medium">Mature</span>
-                            <span class="text-sm sm:text-base font-bold text-green-600">${cardsMature}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-green-500 h-3 rounded-full" style="width: ${state.cards.length > 0 ? (cardsMature / state.cards.length * 100) : 0}%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Performance Metrics -->
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Performance Metrics</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="bg-indigo-50 rounded-xl p-4 border-l-4 border-indigo-500">
-                        <div class="text-xs sm:text-sm text-gray-600 font-medium mb-1">Average Ease Factor</div>
-                        <div class="text-2xl sm:text-3xl font-bold text-indigo-600">${averageEF}</div>
-                        <div class="text-xs text-gray-500 mt-1">Higher is better (2.5 is default)</div>
-                    </div>
-                    <div class="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500">
-                        <div class="text-xs sm:text-sm text-gray-600 font-medium mb-1">Total Decks</div>
-                        <div class="text-2xl sm:text-3xl font-bold text-purple-600">${state.decks.length}</div>
-                        <div class="text-xs text-gray-500 mt-1">${state.cards.length} total cards</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Deck Performance -->
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Deck Performance</h3>
-                ${state.decks.length === 0 ? `
-                    <p class="text-sm sm:text-base text-gray-500 text-center py-8">No decks yet. Create a deck to see analytics!</p>
-                ` : `
-                    <div class="space-y-3">
-                        ${state.decks.map(deck => {
-                            const deckCards = state.cards.filter(c => c.deckId === deck.id);
-                            const avgEF = deckCards.length > 0 
-                                ? (deckCards.reduce((sum, c) => sum + c.easeFactor, 0) / deckCards.length).toFixed(2)
-                                : '2.50';
-                            return `
-                                <div class="border-2 border-gray-200 rounded-xl p-4">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <div>
-                                            <h4 class="font-bold text-gray-900 text-sm sm:text-base">${deck.title}</h4>
-                                            <p class="text-xs sm:text-sm text-gray-600">${deck.courseCode}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="text-lg sm:text-xl font-bold text-indigo-600">${avgEF}</div>
-                                            <div class="text-xs text-gray-500">Avg. EF</div>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs sm:text-sm text-gray-600">
-                                        <span>${deck.cardCount} cards</span>
-                                        <span class="text-red-600 font-semibold">${deck.dueToday} due today</span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `}
-            </div>
-        </div>
-    `;
-}
-
-function renderDeckDetails() {
-    const deckCards = state.cards.filter(c => c.deckId === state.selectedDeck.id);
-    return `
-        <div class="space-y-4 sm:space-y-6 pb-safe">
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
-                    <div>
-                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">${state.selectedDeck.title}</h2>
-                        <p class="text-sm sm:text-base text-gray-600">${state.selectedDeck.courseCode}</p>
-                    </div>
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <button onclick="startReview('${state.selectedDeck.id}');" 
-                            class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 active:bg-indigo-700 text-white font-semibold px-4 sm:px-6 py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
-                            ${icon('zap', 'w-4 h-4 sm:w-5 sm:h-5')} Review
-                        </button>
-                        <button onclick="state.currentView = 'dashboard'; render();" 
-                            class="bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold px-4 sm:px-6 py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
-                            Back
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Add New Card</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Question (Front)</label>
-                        <textarea id="cardFront" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" rows="3" placeholder="Enter your question..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Answer (Back)</label>
-                        <textarea id="cardBack" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" rows="3" placeholder="Enter the answer..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tags (comma-separated)</label>
-                        <input type="text" id="cardTags" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" placeholder="e.g., algorithms, basics">
-                    </div>
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <button onclick="createCard(document.getElementById('cardFront').value, document.getElementById('cardBack').value, document.getElementById('cardTags').value); document.getElementById('cardFront').value=''; document.getElementById('cardBack').value=''; document.getElementById('cardTags').value='';" 
-                            class="flex-1 bg-green-600 active:bg-green-700 text-white font-semibold px-6 py-4 rounded-lg transition-colors touch-card">
-                            Add Card
-                        </button>
-                        <label class="flex-1 flex items-center justify-center gap-2 bg-blue-600 active:bg-blue-700 text-white font-semibold px-6 py-4 rounded-lg cursor-pointer transition-colors touch-card">
-                            ${icon('upload', 'w-5 h-5')} Import CSV
-                            <input type="file" accept=".csv" onchange="if(this.files[0]) handleCSVImport(this.files[0]);" class="hidden">
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
-                <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Cards in this Deck</h3>
-                ${deckCards.length === 0 ? `
-                    <div class="text-center py-8">
-                        <p class="text-sm sm:text-base text-gray-500">No cards yet. Add some cards to start studying!</p>
-                    </div>
-                ` : `
-                    <div class="space-y-3">
-                        ${deckCards.map(card => `
-                            <div class="border-2 border-gray-200 rounded-lg p-4 group relative">
-                                <button onclick="deleteCard('${card.id}');" 
-                                    class="absolute top-3 right-3 bg-red-100 active:bg-red-200 text-red-600 p-2 rounded-lg">
-                                    ${icon('trash', 'w-4 h-4')}
-                                </button>
-                                <div class="flex flex-col sm:flex-row items-start justify-between">
-                                    <div class="flex-1 pr-12 mb-2 sm:mb-0">
-                                        <p class="font-semibold text-gray-900 mb-2 text-sm sm:text-base">${card.front}</p>
-                                        <p class="text-gray-600 text-xs sm:text-sm mb-2">${card.back}</p>
-                                        <div class="flex flex-wrap gap-2">
-                                            ${card.tags.map(tag => `<span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full">${tag}</span>`).join('')}
-                                        </div>
-                                    </div>
-                                    <div class="text-right text-xs sm:text-sm">
-                                        <p class="text-gray-600">Next: ${card.nextDue}</p>
-                                        <p class="text-gray-500">Interval: ${card.interval}d</p>
-                                    </div>
-                                </div>
+        return `
+                <div class="space-y-4 sm:space-y-8 pb-safe">
+                    <!-- XP Progress Bar -->
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg sm:text-xl font-bold text-indigo-600">Level ${
+                                  state.user.level
+                                }</span>
+                                <span class="text-xs sm:text-sm text-gray-600">${
+                                  state.user.xp
+                                } Total XP</span>
                             </div>
-                        `).join('')}
+                            <span class="text-xs sm:text-sm text-gray-600 font-medium">${
+                              xpProgress.current
+                            } / ${xpProgress.needed} XP</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4 sm:h-5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-full rounded-full transition-all duration-500 flex items-center justify-end px-2" style="width: ${
+                              xpProgress.percent
+                            }%">
+                                <span class="text-white text-xs font-bold">${Math.round(
+                                  xpProgress.percent
+                                )}%</span>
+                            </div>
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-2 text-center">${
+                          xpProgress.needed - xpProgress.current
+                        } XP to Level ${state.user.level + 1}</p>
                     </div>
-                `}
-            </div>
-        </div>
-    `;
-}
 
-function renderGamification() {
-    if (!state.showGamification) return '';
-    return `
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50 fade-in">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto slide-up">
-                <div class="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex items-center justify-between">
-                    <h2 class="text-lg sm:text-2xl font-bold text-gray-900">🎮 Gamification & Rewards</h2>
-                    <button onclick="state.showGamification = false; render();" class="text-gray-500 active:text-gray-700 transition-colors p-2 touch-card">
-                        ${icon('x', 'w-5 h-5 sm:w-6 sm:h-6')}
-                    </button>
-                </div>
-                
-                <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                    <section>
-                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">🎮 Gamification Features</h3>
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                        <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-indigo-500">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-xs sm:text-sm text-gray-600 font-medium">Due Today</p>
+                                    <p class="text-2xl sm:text-3xl font-bold text-gray-900">${dueToday}</p>
+                                </div>
+                                ${icon(
+                                  "calendar",
+                                  "w-8 h-8 sm:w-10 sm:h-10 text-indigo-500 opacity-80 mt-2 sm:mt-0"
+                                )}
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-purple-500">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-xs sm:text-sm text-gray-600 font-medium">Collections</p>
+                                    <p class="text-2xl sm:text-3xl font-bold text-gray-900">${
+                                      state.collections.length
+                                    }</p>
+                                </div>
+                                ${icon(
+                                  "folder",
+                                  "w-8 h-8 sm:w-10 sm:h-10 text-purple-500 opacity-80 mt-2 sm:mt-0"
+                                )}
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-green-500">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-xs sm:text-sm text-gray-600 font-medium">Total Cards</p>
+                                    <p class="text-2xl sm:text-3xl font-bold text-gray-900">${
+                                      state.cards.length
+                                    }</p>
+                                </div>
+                                ${icon(
+                                  "target",
+                                  "w-8 h-8 sm:w-10 sm:h-10 text-green-500 opacity-80 mt-2 sm:mt-0"
+                                )}
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border-l-4 border-yellow-500">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-xs sm:text-sm text-gray-600 font-medium">This Week</p>
+                                    <p class="text-2xl sm:text-3xl font-bold text-gray-900">${thisWeek}</p>
+                                </div>
+                                ${icon(
+                                  "trendingUp",
+                                  "w-8 h-8 sm:w-10 sm:h-10 text-yellow-500 opacity-80 mt-2 sm:mt-0"
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                            <div class="text-center p-3 sm:p-4 bg-yellow-50 rounded-lg">
-                                ${icon('trophy', 'w-8 h-8 sm:w-10 sm:h-10 text-yellow-600 mx-auto mb-2')}
-                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">XP Points</h4>
-                                <p class="text-xs sm:text-sm text-gray-700">Earn 5-15 XP per card based on your rating!</p>
-                            </div>
-                            <div class="text-center p-3 sm:p-4 bg-orange-50 rounded-lg">
-                                ${icon('flame', 'w-8 h-8 sm:w-10 sm:h-10 text-orange-500 mx-auto mb-2')}
-                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Daily Streaks</h4>
-                                <p class="text-xs sm:text-sm text-gray-700">Review every day to maintain your streak!</p>
-                            </div>
-                            <div class="text-center p-3 sm:p-4 bg-indigo-50 rounded-lg">
-                                ${icon('award', 'w-8 h-8 sm:w-10 sm:h-10 text-indigo-600 mx-auto mb-2')}
-                                <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Level System</h4>
-                                <p class="text-xs sm:text-sm text-gray-700">Accumulate XP to reach higher levels!</p>
-                            </div>
+                            <button onclick="startReview()"
+                                class="flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 active:from-indigo-600 active:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all touch-card">
+                                ${icon(
+                                  "zap",
+                                  "w-5 h-5 sm:w-6 sm:h-6"
+                                )} <span class="text-sm sm:text-base">Start Daily Review</span>
+                            </button>
+                            <button onclick="state.currentView = 'createCollection'; render();"
+                                class="flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-pink-600 active:from-purple-600 active:to-pink-700 text-white font-semibold py-4 px-6 rounded-xl transition-all touch-card">
+                                ${icon(
+                                  "folder",
+                                  "w-5 h-5 sm:w-6 sm:h-6"
+                                )} <span class="text-sm sm:text-base">Create Collection</span>
+                            </button>
+                            <button onclick="state.currentView = 'createDeck'; render();"
+                                class="flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 active:from-green-600 active:to-emerald-700 text-white font-semibold py-4 px-6 rounded-xl transition-all touch-card">
+                                ${icon(
+                                  "plus",
+                                  "w-5 h-5 sm:w-6 sm:h-6"
+                                )} <span class="text-sm sm:text-base">Create Deck</span>
+                            </button>
                         </div>
-                    </section>
+                    </div>
 
-                    <section class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 sm:p-5 border-2 border-yellow-200">
-                        <h3 class="text-lg sm:text-xl font-bold text-yellow-700 mb-2 sm:mb-3">⭐ How XP Works</h3>
-                        <div class="space-y-2 text-sm sm:text-base text-gray-700">
-                            <div class="flex items-center gap-3 bg-white rounded-lg p-3">
-                                <span class="text-2xl">🔴</span>
-                                <div class="flex-1">
-                                    <strong>Again (1):</strong> +5 XP
-                                    <p class="text-xs text-gray-600">You didn't remember, but you tried!</p>
+                    <!-- Collections & Decks -->
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Your Study Materials</h2>
+
+                        ${
+                          state.collections.length === 0 &&
+                          standaloneDecks.length === 0
+                            ? `
+                            <div class="text-center py-8 sm:py-12">
+                                ${icon(
+                                  "folder",
+                                  "w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4"
+                                )}
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-600 mb-2">Nothing here yet</h3>
+                                <p class="text-sm sm:text-base text-gray-500 mb-4">Create a collection or deck to get started!</p>
+                                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <button onclick="state.currentView = 'createCollection'; render();"
+                                        class="bg-purple-600 active:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
+                                        Create Collection
+                                    </button>
+                                    <button onclick="state.currentView = 'createDeck'; render();"
+                                        class="bg-indigo-600 active:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
+                                        Create Deck
+                                    </button>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-3 bg-white rounded-lg p-3">
-                                <span class="text-2xl">🟡</span>
-                                <div class="flex-1">
-                                    <strong>Hard (3):</strong> +10 XP
-                                    <p class="text-xs text-gray-600">Good effort, you'll get it next time!</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 bg-white rounded-lg p-3">
-                                <span class="text-2xl">🟢</span>
-                                <div class="flex-1">
-                                    <strong>Good (4):</strong> +15 XP
-                                    <p class="text-xs text-gray-600">Perfect! Optimal learning pace!</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 bg-white rounded-lg p-3">
-                                <span class="text-2xl">🔵</span>
-                                <div class="flex-1">
-                                    <strong>Easy (5):</strong> +15 XP
-                                    <p class="text-xs text-gray-600">You've mastered this card!</p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                        `
+                            : `
+                            <div class="space-y-3">
+                                <!-- Collections -->
+                                ${state.collections
+                                  .map((collection) => {
+                                    const isExpanded =
+                                      state.expandedCollections[collection.id];
+                                    const collectionDecks = state.decks.filter(
+                                      (d) => d.collectionId === collection.id
+                                    );
+                                    const collectionDueToday =
+                                      collectionDecks.reduce((sum, d) => {
+                                        const today = new Date()
+                                          .toISOString()
+                                          .split("T")[0];
+                                        return (
+                                          sum +
+                                          state.cards.filter(
+                                            (c) =>
+                                              c.deckId === d.id &&
+                                              c.nextDue <= today
+                                          ).length
+                                        );
+                                      }, 0);
 
-                    <section class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 sm:p-5 border-2 border-orange-200">
-                        <h3 class="text-lg sm:text-xl font-bold text-orange-700 mb-2 sm:mb-3">🔥 Streak System</h3>
-                        <p class="text-sm sm:text-base text-gray-700 mb-3">
-                            Build your streak by reviewing cards every single day! Your streak counter shows how many consecutive days you've studied.
-                        </p>
-                        <div class="bg-white rounded-lg p-4">
-                            <h4 class="font-bold text-gray-900 mb-2 text-sm sm:text-base">Streak Benefits:</h4>
-                            <ul class="space-y-1 text-xs sm:text-sm text-gray-700">
-                                <li class="flex gap-2">
-                                    <span class="text-orange-600">🔥</span>
-                                    <span>Shows your dedication and consistency</span>
-                                </li>
-                                <li class="flex gap-2">
-                                    <span class="text-orange-600">🔥</span>
-                                    <span>Motivates you to study every day</span>
-                                </li>
-                                <li class="flex gap-2">
-                                    <span class="text-orange-600">🔥</span>
-                                    <span>Builds a powerful learning habit</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </section>
+                                    return `
+                                        <div class="border-2 border-purple-200 rounded-xl overflow-hidden">
+                                            <!-- Collection Header -->
+                                            <div onclick="toggleCollection('${
+                                              collection.id
+                                            }')"
+                                                class="bg-gradient-to-r from-purple-50 to-pink-50 p-4 cursor-pointer active:bg-purple-100 transition-colors touch-card">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="flex items-center gap-3 flex-1">
+                                                        ${icon(
+                                                          isExpanded
+                                                            ? "folderOpen"
+                                                            : "folder",
+                                                          "w-5 h-5 sm:w-6 sm:h-6 text-purple-600"
+                                                        )}
+                                                        <div class="flex-1">
+                                                            <h3 class="font-bold text-gray-900 text-base sm:text-lg">${
+                                                              collection.title
+                                                            }</h3>
+                                                            ${
+                                                              collection.description
+                                                                ? `<p class="text-xs sm:text-sm text-gray-600">${collection.description}</p>`
+                                                                : ""
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center gap-3">
+                                                        <button onclick="event.stopPropagation(); startReview(null, '${
+                                                          collection.id
+                                                        }');"
+                                                            class="bg-purple-600 active:bg-purple-700 text-white p-2 rounded-lg touch-card">
+                                                            ${icon(
+                                                              "zap",
+                                                              "w-4 h-4"
+                                                            )}
+                                                        </button>
+                                                        <button onclick="event.stopPropagation(); deleteCollection('${
+                                                          collection.id
+                                                        }');"
+                                                            class="bg-red-100 active:bg-red-200 text-red-600 p-2 rounded-lg touch-card">
+                                                            ${icon(
+                                                              "trash",
+                                                              "w-4 h-4"
+                                                            )}
+                                                        </button>
+                                                        ${icon(
+                                                          isExpanded
+                                                            ? "chevronDown"
+                                                            : "chevronRight",
+                                                          "w-5 h-5 text-purple-600"
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center justify-between text-xs sm:text-sm text-gray-600">
+                                                    <span>${
+                                                      collectionDecks.length
+                                                    } decks • ${
+                                      collection.cardCount || 0
+                                    } cards</span>
+                                                    <span class="bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">${collectionDueToday} due</span>
+                                                </div>
+                                            </div>
 
-                    <section class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 sm:p-5 border-2 border-indigo-200">
-                        <h3 class="text-lg sm:text-xl font-bold text-indigo-700 mb-2 sm:mb-3">📊 Level Progression</h3>
-                        <p class="text-sm sm:text-base text-gray-700 mb-3">
-                            Your level increases as you accumulate XP! Each level represents your overall progress and dedication.
-                        </p>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <div class="bg-white rounded-lg p-3 text-center">
-                                <div class="text-xl sm:text-2xl font-bold text-gray-500">Level 1</div>
-                                <div class="text-xs sm:text-sm text-gray-600">0 - 1,999 XP</div>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 text-center">
-                                <div class="text-xl sm:text-2xl font-bold text-green-600">Level 2</div>
-                                <div class="text-xs sm:text-sm text-gray-600">2,000 - 2,999 XP</div>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 text-center">
-                                <div class="text-xl sm:text-2xl font-bold text-blue-600">Level 3</div>
-                                <div class="text-xs sm:text-sm text-gray-600">3,000 - 4,249 XP</div>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 text-center">
-                                <div class="text-xl sm:text-2xl font-bold text-purple-600">Level 4</div>
-                                <div class="text-xs sm:text-sm text-gray-600">4,250 - 5,749 XP</div>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 text-center">
-                                <div class="text-xl sm:text-2xl font-bold text-yellow-600">Level 5</div>
-                                <div class="text-xs sm:text-sm text-gray-600">5,750 - 7,499 XP</div>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 text-center">
-                                <div class="text-xl sm:text-2xl font-bold text-red-600">Level 6+</div>
-                                <div class="text-xs sm:text-sm text-gray-600">7,500+ XP</div>
-                            </div>
-                        </div>
-                        <p class="text-xs sm:text-sm text-gray-600 mt-3 text-center">
-                            Each level requires +250 more XP: Level 2 needs 1,000 XP, Level 3 needs 1,250 XP, Level 4 needs 1,500 XP, and so on!
-                        </p>
-                    </section>
+                                            <!-- Expanded Collection Content -->
+                                            ${
+                                              isExpanded
+                                                ? `
+                                                <div class="bg-white p-4 space-y-2">
+                                                    <button onclick="state.selectedCollection = ${JSON.stringify(
+                                                      collection
+                                                    ).replace(
+                                                      /"/g,
+                                                      "&quot;"
+                                                    )}; state.currentView = 'createDeck'; render();"
+                                                        class="w-full flex items-center justify-center gap-2 bg-purple-100 active:bg-purple-200 text-purple-700 font-semibold py-3 rounded-lg transition-colors text-sm touch-card mb-3">
+                                                        ${icon(
+                                                          "plus",
+                                                          "w-4 h-4"
+                                                        )} Add Deck to Collection
+                                                    </button>
 
-                    <section class="bg-red-50 rounded-xl p-4 sm:p-5 border-l-4 border-red-500">
-                        <h3 class="text-lg sm:text-xl font-bold text-red-600 mb-2 sm:mb-3">⚠️ Data Management</h3>
-                        <p class="text-sm sm:text-base text-gray-700 mb-2 sm:mb-3">All data is stored locally in your browser:</p>
-                        <ul class="space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-700 mb-3 sm:mb-4">
-                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Your data stays private and works offline</span></li>
-                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Clearing browser data will delete everything</span></li>
-                            <li class="flex gap-2"><span class="text-red-600">•</span><span>Data doesn't sync across devices</span></li>
-                        </ul>
-                        <div class="bg-white rounded-lg p-3 sm:p-4">
-                            <p class="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Delete Options:</p>
-                            <ul class="space-y-1 text-xs sm:text-sm text-gray-700">
-                                <li><strong>Delete Card:</strong> Tap trash icon on any card</li>
-                                <li><strong>Delete Deck:</strong> Tap trash icon on any deck</li>
-                                <li><strong>Reset All:</strong> Click trash icon in header</li>
-                            </ul>
-                        </div>
-                    </section>
+                                                    ${
+                                                      collectionDecks.length ===
+                                                      0
+                                                        ? `
+                                                        <p class="text-center text-gray-500 text-sm py-4">No decks in this collection yet</p>
+                                                    `
+                                                        : `
+                                                        <div class="space-y-2">
+                                                            ${collectionDecks
+                                                              .map((deck) => {
+                                                                const today =
+                                                                  new Date()
+                                                                    .toISOString()
+                                                                    .split(
+                                                                      "T"
+                                                                    )[0];
+                                                                const deckDueToday =
+                                                                  state.cards.filter(
+                                                                    (c) =>
+                                                                      c.deckId ===
+                                                                        deck.id &&
+                                                                      c.nextDue <=
+                                                                        today
+                                                                  ).length;
+                                                                return `
+                                                                    <div onclick="state.selectedDeck = ${JSON.stringify(
+                                                                      deck
+                                                                    ).replace(
+                                                                      /"/g,
+                                                                      "&quot;"
+                                                                    )}; state.currentView = 'deckDetails'; render();"
+                                                                        class="ml-4 border-2 border-gray-200 active:border-indigo-500 rounded-lg p-3 cursor-pointer transition-all touch-card">
+                                                                        <div class="flex items-center justify-between mb-2">
+                                                                            <div class="flex items-center gap-2 flex-1">
+                                                                                ${icon(
+                                                                                  "bookOpen",
+                                                                                  "w-4 h-4 text-indigo-500"
+                                                                                )}
+                                                                                <div>
+                                                                                    <h4 class="font-bold text-gray-900 text-sm">${
+                                                                                      deck.title
+                                                                                    }</h4>
+                                                                                    <p class="text-xs text-gray-600">${
+                                                                                      deck.courseCode
+                                                                                    }</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <button onclick="event.stopPropagation(); deleteDeck('${
+                                                                              deck.id
+                                                                            }');"
+                                                                                class="bg-red-100 active:bg-red-200 text-red-600 p-1.5 rounded-lg">
+                                                                                ${icon(
+                                                                                  "trash",
+                                                                                  "w-3 h-3"
+                                                                                )}
+                                                                            </button>
+                                                                        </div>
+                                                                        <div class="flex items-center justify-between text-xs text-gray-600">
+                                                                            <span>${
+                                                                              deck.cardCount
+                                                                            } cards</span>
+                                                                            <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">${deckDueToday} due</span>
+                                                                        </div>
+                                                                    </div>
+                                                                `;
+                                                              })
+                                                              .join("")}
+                                                        </div>
+                                                    `
+                                                    }
+                                                </div>
+                                            `
+                                                : ""
+                                            }
+                                        </div>
+                                    `;
+                                  })
+                                  .join("")}
+
+                                <!-- Standalone Decks -->
+                                ${
+                                  standaloneDecks.length > 0
+                                    ? `
+                                    <div class="mt-6">
+                                        <h3 class="text-sm font-semibold text-gray-600 mb-3 px-2">Standalone Decks</h3>
+                                        <div class="space-y-2">
+                                            ${standaloneDecks
+                                              .map((deck) => {
+                                                const today = new Date()
+                                                  .toISOString()
+                                                  .split("T")[0];
+                                                const deckDueToday =
+                                                  state.cards.filter(
+                                                    (c) =>
+                                                      c.deckId === deck.id &&
+                                                      c.nextDue <= today
+                                                  ).length;
+                                                return `
+                                                    <div onclick="state.selectedDeck = ${JSON.stringify(
+                                                      deck
+                                                    ).replace(
+                                                      /"/g,
+                                                      "&quot;"
+                                                    )}; state.currentView = 'deckDetails'; render();"
+                                                        class="border-2 border-gray-200 active:border-indigo-500 rounded-xl p-4 cursor-pointer transition-all relative group touch-card">
+                                                        <button onclick="event.stopPropagation(); deleteDeck('${
+                                                          deck.id
+                                                        }');"
+                                                            class="absolute top-3 right-3 bg-red-100 active:bg-red-200 text-red-600 p-2 rounded-lg">
+                                                            ${icon(
+                                                              "trash",
+                                                              "w-4 h-4"
+                                                            )}
+                                                        </button>
+                                                        <div class="flex items-start justify-between mb-3 pr-10">
+                                                            <div>
+                                                                <h3 class="font-bold text-gray-900 text-base sm:text-lg">${
+                                                                  deck.title
+                                                                }</h3>
+                                                                <p class="text-xs sm:text-sm text-gray-600">${
+                                                                  deck.courseCode
+                                                                }</p>
+                                                            </div>
+                                                            ${icon(
+                                                              "bookOpen",
+                                                              "w-5 h-5 sm:w-6 sm:h-6 text-indigo-500"
+                                                            )}
+                                                        </div>
+                                                        <div class="flex items-center justify-between text-xs sm:text-sm">
+                                                            <span class="text-gray-600">${
+                                                              deck.cardCount
+                                                            } cards</span>
+                                                            <span class="bg-red-100 text-red-700 px-2 sm:px-3 py-1 rounded-full font-semibold">${deckDueToday} due</span>
+                                                        </div>
+                                                    </div>
+                                                `;
+                                              })
+                                              .join("")}
+                                        </div>
+                                    </div>
+                                `
+                                    : ""
+                                }
+                            </div>
+                        `
+                        }
+                    </div>
                 </div>
+            `;
+      }
 
-                <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6 safe-area-bottom">
-                    <button onclick="state.showGamification = false; render();" 
-                        class="w-full bg-purple-600 active:bg-purple-700 text-white font-semibold py-3 sm:py-4 rounded-lg transition-colors touch-card">
-                        Start Earning Rewards!
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function renderGuide() {
-    if (!state.showGuide) return '';
-    return `
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50 fade-in">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto slide-up">
-                <div class="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex items-center justify-between">
-                    <h2 class="text-lg sm:text-2xl font-bold text-gray-900">How It Works</h2>
-                    <button onclick="state.showGuide = false; render();" class="text-gray-500 active:text-gray-700 transition-colors p-2 touch-card">
-                        ${icon('x', 'w-5 h-5 sm:w-6 sm:h-6')}
-                    </button>
-                </div>
-                
-                <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                    <section>
-                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">📚 What is Spaced Repetition?</h3>
-                        <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
-                            Spaced repetition is a scientifically-proven learning technique that helps you remember information long-term. 
-                            Instead of cramming, you review flashcards at increasing intervals. Cards you know well appear less often, 
-                            while difficult cards appear more frequently until you master them.
-                        </p>
-                    </section>
-
-                    <section class="bg-indigo-50 rounded-xl p-4 sm:p-5">
-                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">🚀 Getting Started</h3>
-                        <ol class="space-y-2 sm:space-y-3 text-sm sm:text-base text-gray-700">
-                            <li class="flex gap-2 sm:gap-3">
-                                <span class="font-bold text-indigo-600 flex-shrink-0">1.</span>
-                                <div><strong>Create a Deck:</strong> Click "Create New Deck" and give it a title and course code</div>
-                            </li>
-                            <li class="flex gap-2 sm:gap-3">
-                                <span class="font-bold text-indigo-600 flex-shrink-0">2.</span>
-                                <div><strong>Add Cards:</strong> Manually type question/answer pairs OR import a CSV file</div>
-                            </li>
-                            <li class="flex gap-2 sm:gap-3">
-                                <span class="font-bold text-indigo-600 flex-shrink-0">3.</span>
-                                <div><strong>Start Reviewing:</strong> Click "Start Daily Review" to practice cards due today</div>
-                            </li>
-                            <li class="flex gap-2 sm:gap-3">
-                                <span class="font-bold text-indigo-600 flex-shrink-0">4.</span>
-                                <div><strong>Rate Yourself:</strong> Honestly rate how well you knew each card</div>
-                            </li>
-                        </ol>
-                    </section>
-
-                    <section>
-                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">⭐ Understanding the Rating System</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                            <div class="bg-red-50 border-l-4 border-red-500 p-3 sm:p-4 rounded">
-                                <h4 class="font-bold text-red-700 mb-1 text-sm sm:text-base">Again (1)</h4>
-                                <p class="text-xs sm:text-sm text-gray-700">Didn't remember at all. Card resets and appears tomorrow.</p>
-                            </div>
-                            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 sm:p-4 rounded">
-                                <h4 class="font-bold text-yellow-700 mb-1 text-sm sm:text-base">Hard (3)</h4>
-                                <p class="text-xs sm:text-sm text-gray-700">Struggled to remember. Shorter interval before next review.</p>
-                            </div>
-                            <div class="bg-green-50 border-l-4 border-green-500 p-3 sm:p-4 rounded">
-                                <h4 class="font-bold text-green-700 mb-1 text-sm sm:text-base">Good (4)</h4>
-                                <p class="text-xs sm:text-sm text-gray-700">Remembered correctly. Normal interval (optimal for learning).</p>
-                            </div>
-                            <div class="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4 rounded">
-                                <h4 class="font-bold text-blue-700 mb-1 text-sm sm:text-base">Easy (5)</h4>
-                                <p class="text-xs sm:text-sm text-gray-700">Instantly remembered. Longer interval before next review.</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="bg-purple-50 rounded-xl p-4 sm:p-5">
-                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">🧠 The SM-2 Algorithm</h3>
-                        <p class="text-sm sm:text-base text-gray-700 mb-2 sm:mb-3">
-                            This app uses the SuperMemo-2 (SM-2) algorithm, developed through decades of research. Here's how it schedules your reviews:
-                        </p>
-                        <ul class="space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-700">
-                            <li class="flex gap-2">
-                                <span class="text-indigo-600">•</span>
-                                <span><strong>First review:</strong> 1 day later</span>
-                            </li>
-                            <li class="flex gap-2">
-                                <span class="text-indigo-600">•</span>
-                                <span><strong>Second review:</strong> 6 days later (if you rated it "Good" or better)</span>
-                            </li>
-                            <li class="flex gap-2">
-                                <span class="text-indigo-600">•</span>
-                                <span><strong>Future reviews:</strong> Interval multiplies based on performance</span>
-                            </li>
-                            <li class="flex gap-2">
-                                <span class="text-indigo-600">•</span>
-                                <span><strong>If you forget:</strong> Card resets to 1-day interval</span>
-                            </li>
-                        </ul>
-                    </section>
-
-                    <section>
-                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">📤 CSV Import Format</h3>
-                        <p class="text-sm sm:text-base text-gray-700 mb-2 sm:mb-3">Bulk-import flashcards using a CSV file with this format:</p>
-                        <div class="bg-gray-900 text-green-400 rounded-lg p-3 sm:p-4 font-mono text-xs sm:text-sm overflow-x-auto">
-                            <div>front,back,tags</div>
-                            <div>"What is photosynthesis?","Process plants use to make energy","biology;plants"</div>
-                            <div>"Capital of France","Paris","geography;europe"</div>
-                        </div>
-                    </section>
-
-                    <section class="bg-green-50 rounded-xl p-4 sm:p-5">
-                        <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">✨ Tips for Success</h3>
-                        <ul class="space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-700">
-                            <li class="flex gap-2">
-                                ${icon('checkCircle', 'w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0 mt-0.5')}
-                                <span><strong>Review daily:</strong> Even 10 minutes is better than cramming</span>
-                            </li>
-                            <li class="flex gap-2">
-                                ${icon('checkCircle', 'w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0 mt-0.5')}
-                                <span><strong>Be honest:</strong> Rate based on actual recall, not recognition</span>
-                            </li>
-                            <li class="flex gap-2">
-                                ${icon('checkCircle', 'w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0 mt-0.5')}
-                                <span><strong>Create good cards:</strong> Keep questions clear and concise</span>
-                            </li>
-                            <li class="flex gap-2">
-                                ${icon('checkCircle', 'w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0 mt-0.5')}
-                                <span><strong>Trust the algorithm:</strong> Let SM-2 do its job</span>
-                            </li>
-                        </ul>
-                    </section>
-                </div>
-
-                <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6 safe-area-bottom">
-                    <button onclick="state.showGuide = false; render();" 
-                        class="w-full bg-indigo-600 active:bg-indigo-700 text-white font-semibold py-3 sm:py-4 rounded-lg transition-colors touch-card">
-                        Got it! Let's Start Learning
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function render() {
-    const app = document.getElementById('app');
-    
-    let content = '';
-    
-    if (state.reviewMode) {
-        // In review mode - ONLY show the review content, NO modals
-        content = renderReviewMode();
-        app.innerHTML = content;
-        return; // Exit early to prevent any modals from rendering
-    }
-    
-    // Not in review mode - show normal content with modals
-    content = `
-        <!-- Header -->
-        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10 safe-area-top">
-            <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2 sm:gap-3">
-                        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
-                            ${icon('brain', 'w-4 h-4 sm:w-6 sm:h-6 text-white')}
+      function renderCreateCollection() {
+        return `
+                <div class="bg-white rounded-xl shadow-md p-4 sm:p-8 max-w-2xl mx-auto">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Create New Collection</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Collection Title</label>
+                            <input type="text" id="collectionTitle" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none text-base" placeholder="e.g., Japanese Language">
                         </div>
                         <div>
-                            <h1 class="text-base sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                Study Hub
-                            </h1>
-                            <p class="text-[10px] sm:text-xs text-gray-500 font-medium -mt-0.5">(𝐵𝑌 𝑅𝛯𝐷 𝐹𝐿𝛥𝐺)</p>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
+                            <textarea id="collectionDescription" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none text-base" rows="3" placeholder="e.g., All materials for learning Japanese"></textarea>
                         </div>
-                    </div>
-                    <div class="flex items-center gap-1.5 sm:gap-4">
-                        <button onclick="state.showGuide = true; render();" 
-                            class="flex items-center gap-1 text-indigo-600 active:text-indigo-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
-                            ${icon('helpCircle', 'w-4 h-4 sm:w-5 sm:h-5')}
-                        </button>
-                        <button onclick="state.showGamification = true; render();" 
-                            class="flex items-center gap-1 text-purple-600 active:text-purple-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
-                            ${icon('award', 'w-4 h-4 sm:w-5 sm:h-5')}
-                        </button>
-                        <button onclick="if(confirm('Delete all data?')) resetAllData();" 
-                            class="flex items-center text-red-600 active:text-red-700 font-medium transition-colors text-xs touch-card p-1.5 sm:p-2">
-                            ${icon('trash', 'w-4 h-4 sm:w-5 sm:h-5')}
-                        </button>
-                        <div class="flex items-center gap-1 bg-orange-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
-                            ${icon('flame', 'w-3 h-3 sm:w-4 sm:h-4 text-orange-500')}
-                            <span class="font-bold text-orange-700 text-xs">${state.user.streak}</span>
-                        </div>
-                        <div class="flex items-center gap-1 bg-yellow-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
-                            ${icon('trophy', 'w-3 h-3 sm:w-4 sm:h-4 text-yellow-600')}
-                            <span class="font-bold text-yellow-700 text-xs">${state.user.xp}</span>
-                        </div>
-                        <div class="flex bg-indigo-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
-                            <span class="font-bold text-indigo-700 text-xs sm:text-sm">Lvl ${state.user.level}</span>
+                        <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                            <button onclick="createCollection(document.getElementById('collectionTitle').value, document.getElementById('collectionDescription').value);"
+                                class="flex-1 bg-purple-600 active:bg-purple-700 text-white font-semibold py-4 rounded-lg transition-colors touch-card">
+                                Create Collection
+                            </button>
+                            <button onclick="state.currentView = 'dashboard'; render();"
+                                class="flex-1 bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold py-4 rounded-lg transition-colors touch-card">
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </header>
+            `;
+      }
 
-        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-            ${state.currentView === 'dashboard' ? renderDashboard() : ''}
-            ${state.currentView === 'createDeck' ? renderCreateDeck() : ''}
-            ${state.currentView === 'analytics' ? renderAnalytics() : ''}
-            ${state.currentView === 'deckDetails' ? renderDeckDetails() : ''}
-        </div>
-    `;
-    
-    app.innerHTML = content + renderGuide() + renderGamification();
-}
+      function renderCreateDeck() {
+        return `
+                <div class="bg-white rounded-xl shadow-md p-4 sm:p-8 max-w-2xl mx-auto">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
+                        ${
+                          state.selectedCollection
+                            ? `Add Deck to "${state.selectedCollection.title}"`
+                            : "Create New Deck"
+                        }
+                    </h2>
+                    <div class="space-y-4">
+                        ${
+                          !state.selectedCollection &&
+                          state.collections.length > 0
+                            ? `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Add to Collection (Optional)</label>
+                                <select id="deckCollection" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base">
+                                    <option value="">No Collection (Standalone)</option>
+                                    ${state.collections
+                                      .map(
+                                        (c) =>
+                                          `<option value="${c.id}">${c.title}</option>`
+                                      )
+                                      .join("")}
+                                </select>
+                            </div>
+                        `
+                            : ""
+                        }
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Deck Title</label>
+                            <input type="text" id="deckTitle" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" placeholder="e.g., Computer Science 101">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Course Code</label>
+                            <input type="text" id="deckCode" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" placeholder="e.g., CS101">
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                            <button onclick="createDeck(document.getElementById('deckTitle').value, document.getElementById('deckCode').value, ${
+                              state.selectedCollection
+                                ? `'${state.selectedCollection.id}'`
+                                : `document.getElementById('deckCollection') ? document.getElementById('deckCollection').value : null`
+                            });"
+                                class="flex-1 bg-indigo-600 active:bg-indigo-700 text-white font-semibold py-4 rounded-lg transition-colors touch-card">
+                                Create Deck
+                            </button>
+                            <button onclick="state.currentView = 'dashboard'; state.selectedCollection = null; render();"
+                                class="flex-1 bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold py-4 rounded-lg transition-colors touch-card">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+      }
 
-// Initialize
-initializeUserData();
-loadData();
-render();
+      // Keep all your other render functions (renderDeckDetails, renderAnalytics, renderGuide, renderGamification) exactly as they are in your original code
 
-// Service Worker registration (only if file exists)
-if ('serviceWorker' in navigator && window.location.hostname !== 'www.claudeusercontent.com') {
-    navigator.serviceWorker.register('/service-worker.js')
-        .then(() => console.log('Service Worker registered'))
-        .catch(err => console.log('Service Worker not available:', err.message));
-}
-</script>
+      // Then continue with the rest...
 
-</body>
+      function render() {
+        const app = document.getElementById("app");
+        let content = "";
+
+        if (state.reviewMode) {
+          content = renderReviewMode();
+          app.innerHTML = content;
+          return;
+        }
+
+        content = `
+                <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10 safe-area-top">
+                    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 sm:gap-3">
+                                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
+                                    ${icon(
+                                      "brain",
+                                      "w-4 h-4 sm:w-6 sm:h-6 text-white"
+                                    )}
+                                </div>
+                                <div>
+                                    <h1 class="text-base sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                        Study Hub
+                                    </h1>
+                                    <p class="text-[10px] sm:text-xs text-gray-500 font-medium -mt-0.5">(𝐵𝑌 𝑅𝛯𝐷 𝐹𝐿𝛥𝐺)</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-4">
+                                <button onclick="state.showGuide = true; render();"
+                                    class="flex items-center gap-1 text-indigo-600 active:text-indigo-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
+                                    ${icon(
+                                      "helpCircle",
+                                      "w-4 h-4 sm:w-5 sm:h-5"
+                                    )}
+                                </button>
+                                <button onclick="state.showGamification = true; render();"
+                                    class="flex items-center gap-1 text-purple-600 active:text-purple-700 font-medium transition-colors text-xs sm:text-sm touch-card p-1.5 sm:p-2">
+                                    ${icon("award", "w-4 h-4 sm:w-5 sm:h-5")}
+                                </button>
+                                <button onclick="if(confirm('Delete all data?')) resetAllData();"
+                                    class="flex items-center text-red-600 active:text-red-700 font-medium transition-colors text-xs touch-card p-1.5 sm:p-2">
+                                    ${icon("trash", "w-4 h-4 sm:w-5 sm:h-5")}
+                                </button>
+                                <div class="flex items-center gap-1 bg-orange-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
+                                    ${icon(
+                                      "flame",
+                                      "w-3 h-3 sm:w-4 sm:h-4 text-orange-500"
+                                    )}
+                                    <span class="font-bold text-orange-700 text-xs">${
+                                      state.user.streak
+                                    }</span>
+                                </div>
+                                <div class="flex items-center gap-1 bg-yellow-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
+                                    ${icon(
+                                      "trophy",
+                                      "w-3 h-3 sm:w-4 sm:h-4 text-yellow-600"
+                                    )}
+                                    <span class="font-bold text-yellow-700 text-xs">${
+                                      state.user.xp
+                                    }</span>
+                                </div>
+                                <div class="flex bg-indigo-100 px-1.5 sm:px-3 py-1 sm:py-2 rounded-full">
+                                    <span class="font-bold text-indigo-700 text-xs sm:text-sm">Lvl ${
+                                      state.user.level
+                                    }</span>
+                                </div>
+                            </div>
+                        </div></div>
+                </header>
+
+                <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+                    ${
+                      state.currentView === "dashboard" ? renderDashboard() : ""
+                    }
+                    ${
+                      state.currentView === "createCollection"
+                        ? renderCreateCollection()
+                        : ""
+                    }
+                    ${
+                      state.currentView === "createDeck"
+                        ? renderCreateDeck()
+                        : ""
+                    }
+                    ${
+                      state.currentView === "analytics" ? renderAnalytics() : ""
+                    }
+                    ${
+                      state.currentView === "deckDetails"
+                        ? renderDeckDetails()
+                        : ""
+                    }
+                </div>
+            `;
+
+        app.innerHTML = content + renderGuide() + renderGamification();
+      }
+
+      function renderAnalytics() {
+        const totalReviews = state.cards.reduce(
+          (sum, card) => sum + card.repetitions,
+          0
+        );
+        const averageEF =
+          state.cards.length > 0
+            ? (
+                state.cards.reduce((sum, card) => sum + card.easeFactor, 0) /
+                state.cards.length
+              ).toFixed(2)
+            : "2.50";
+        const cardsLearning = state.cards.filter(
+          (c) => c.repetitions > 0 && c.repetitions < 3
+        ).length;
+        const cardsMature = state.cards.filter(
+          (c) => c.repetitions >= 3
+        ).length;
+        const cardsNew = state.cards.filter((c) => c.repetitions === 0).length;
+
+        return `
+                <div class="space-y-4 sm:space-y-6 pb-safe">
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <div class="flex items-center justify-between mb-4 sm:mb-6">
+                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">📊 Your Analytics</h2>
+                            <button onclick="state.currentView = 'dashboard'; render();"
+                                class="bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
+                                Back
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 text-center">
+                                <div class="text-2xl sm:text-3xl font-bold text-indigo-600 mb-1">${
+                                  state.user.xp
+                                }</div>
+                                <div class="text-xs sm:text-sm text-gray-600 font-medium">Total XP</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 text-center">
+                                <div class="text-2xl sm:text-3xl font-bold text-orange-600 mb-1">${
+                                  state.user.streak
+                                }</div>
+                                <div class="text-xs sm:text-sm text-gray-600 font-medium">Day Streak</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center">
+                                <div class="text-2xl sm:text-3xl font-bold text-purple-600 mb-1">${totalReviews}</div>
+                                <div class="text-xs sm:text-sm text-gray-600 font-medium">Reviews</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center">
+                                <div class="text-2xl sm:text-3xl font-bold text-green-600 mb-1">${
+                                  state.user.level
+                                }</div>
+                                <div class="text-xs sm:text-sm text-gray-600 font-medium">Level</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Card Distribution</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">New Cards</span>
+                                    <span class="text-sm sm:text-base font-bold text-blue-600">${cardsNew}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="bg-blue-500 h-3 rounded-full" style="width: ${
+                                      state.cards.length > 0
+                                        ? (cardsNew / state.cards.length) * 100
+                                        : 0
+                                    }%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">Learning</span>
+                                    <span class="text-sm sm:text-base font-bold text-yellow-600">${cardsLearning}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="bg-yellow-500 h-3 rounded-full" style="width: ${
+                                      state.cards.length > 0
+                                        ? (cardsLearning / state.cards.length) *
+                                          100
+                                        : 0
+                                    }%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">Mature</span>
+                                    <span class="text-sm sm:text-base font-bold text-green-600">${cardsMature}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="bg-green-500 h-3 rounded-full" style="width: ${
+                                      state.cards.length > 0
+                                        ? (cardsMature / state.cards.length) *
+                                          100
+                                        : 0
+                                    }%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Performance Metrics</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-indigo-50 rounded-xl p-4 border-l-4 border-indigo-500">
+                                <div class="text-xs sm:text-sm text-gray-600 font-medium mb-1">Average Ease Factor</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-indigo-600">${averageEF}</div>
+                                <div class="text-xs text-gray-500 mt-1">Higher is better (2.5 is default)</div>
+                            </div>
+                            <div class="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500">
+                                <div class="text-xs sm:text-sm text-gray-600 font-medium mb-1">Collections</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-purple-600">${
+                                  state.collections.length
+                                }</div>
+                                <div class="text-xs text-gray-500 mt-1">${
+                                  state.decks.length
+                                } decks total</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+      }
+
+      function renderDeckDetails() {
+        const deckCards = state.cards.filter(
+          (c) => c.deckId === state.selectedDeck.id
+        );
+        return `
+                <div class="space-y-4 sm:space-y-6 pb-safe">
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
+                            <div>
+                                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">${
+                                  state.selectedDeck.title
+                                }</h2>
+                                <p class="text-sm sm:text-base text-gray-600">${
+                                  state.selectedDeck.courseCode
+                                }</p>
+                            </div>
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <button onclick="startReview('${
+                                  state.selectedDeck.id
+                                }');"
+                                    class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 active:bg-indigo-700 text-white font-semibold px-4 sm:px-6 py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
+                                    ${icon(
+                                      "zap",
+                                      "w-4 h-4 sm:w-5 sm:h-5"
+                                    )} Review
+                                </button>
+                                <button onclick="state.currentView = 'dashboard'; render();"
+                                    class="bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold px-4 sm:px-6 py-3 rounded-lg transition-colors text-sm sm:text-base touch-card">
+                                    Back
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Add New Card</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Question (Front)</label>
+                                <textarea id="cardFront" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" rows="3" placeholder="Enter your question..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Answer (Back)</label>
+                                <textarea id="cardBack" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" rows="3" placeholder="Enter the answer..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tags (comma-separated)</label>
+                                <input type="text" id="cardTags" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-base" placeholder="e.g., algorithms, basics">
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button onclick="createCard(document.getElementById('cardFront').value, document.getElementById('cardBack').value, document.getElementById('cardTags').value); document.getElementById('cardFront').value=''; document.getElementById('cardBack').value=''; document.getElementById('cardTags').value='';"
+                                    class="flex-1 bg-green-600 active:bg-green-700 text-white font-semibold px-6 py-4 rounded-lg transition-colors touch-card">
+                                    Add Card
+                                </button>
+                                <label class="flex-1 flex items-center justify-center gap-2 bg-blue-600 active:bg-blue-700 text-white font-semibold px-6 py-4 rounded-lg cursor-pointer transition-colors touch-card">
+                                    ${icon("upload", "w-5 h-5")} Import CSV
+                                    <input type="file" accept=".csv" onchange="if(this.files[0]) handleCSVImport(this.files[0]);" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">Cards in this Deck</h3>
+                        ${
+                          deckCards.length === 0
+                            ? `
+                            <div class="text-center py-8">
+                                <p class="text-sm sm:text-base text-gray-500">No cards yet. Add some cards to start studying!</p>
+                            </div>
+                        `
+                            : `
+                            <div class="space-y-3">
+                                ${deckCards
+                                  .map(
+                                    (card) => `
+                                    <div class="border-2 border-gray-200 rounded-lg p-4 group relative">
+                                        <button onclick="deleteCard('${
+                                          card.id
+                                        }');"
+                                            class="absolute top-3 right-3 bg-red-100 active:bg-red-200 text-red-600 p-2 rounded-lg">
+                                            ${icon("trash", "w-4 h-4")}
+                                        </button>
+                                        <div class="flex flex-col sm:flex-row items-start justify-between">
+                                            <div class="flex-1 pr-12 mb-2 sm:mb-0">
+                                                <p class="font-semibold text-gray-900 mb-2 text-sm sm:text-base">${
+                                                  card.front
+                                                }</p>
+                                                <p class="text-gray-600 text-xs sm:text-sm mb-2">${
+                                                  card.back
+                                                }</p>
+                                                <div class="flex flex-wrap gap-2">
+                                                    ${card.tags
+                                                      .map(
+                                                        (tag) =>
+                                                          `<span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full">${tag}</span>`
+                                                      )
+                                                      .join("")}
+                                                </div>
+                                            </div>
+                                            <div class="text-right text-xs sm:text-sm">
+                                                <p class="text-gray-600">Next: ${
+                                                  card.nextDue
+                                                }</p>
+                                                <p class="text-gray-500">Interval: ${
+                                                  card.interval
+                                                }d</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                                  )
+                                  .join("")}
+                            </div>
+                        `
+                        }
+                    </div>
+                </div>
+            `;
+      }
+
+      function renderGamification() {
+        if (!state.showGamification) return "";
+        return `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50 fade-in">
+                    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto slide-up">
+                        <div class="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex items-center justify-between">
+                            <h2 class="text-lg sm:text-2xl font-bold text-gray-900">🎮 Gamification & Rewards</h2>
+                            <button onclick="state.showGamification = false; render();" class="text-gray-500 active:text-gray-700 transition-colors p-2 touch-card">
+                                ${icon("x", "w-5 h-5 sm:w-6 sm:h-6")}
+                            </button>
+                        </div>
+
+                        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                            <section>
+                                <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">🎮 Gamification Features</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                    <div class="text-center p-3 sm:p-4 bg-yellow-50 rounded-lg">
+                                        ${icon(
+                                          "trophy",
+                                          "w-8 h-8 sm:w-10 sm:h-10 text-yellow-600 mx-auto mb-2"
+                                        )}
+                                        <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">XP Points</h4>
+                                        <p class="text-xs sm:text-sm text-gray-700">Earn 5-15 XP per card based on your rating!</p>
+                                    </div>
+                                    <div class="text-center p-3 sm:p-4 bg-orange-50 rounded-lg">
+                                        ${icon(
+                                          "flame",
+                                          "w-8 h-8 sm:w-10 sm:h-10 text-orange-500 mx-auto mb-2"
+                                        )}
+                                        <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Daily Streaks</h4>
+                                        <p class="text-xs sm:text-sm text-gray-700">Review every day to maintain your streak!</p>
+                                    </div>
+                                    <div class="text-center p-3 sm:p-4 bg-indigo-50 rounded-lg">
+                                        ${icon(
+                                          "award",
+                                          "w-8 h-8 sm:w-10 sm:h-10 text-indigo-600 mx-auto mb-2"
+                                        )}
+                                        <h4 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Level System</h4>
+                                        <p class="text-xs sm:text-sm text-gray-700">Accumulate XP to reach higher levels!</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 sm:p-5 border-2 border-yellow-200">
+                                <h3 class="text-lg sm:text-xl font-bold text-yellow-700 mb-2 sm:mb-3">⭐ How XP Works</h3>
+                                <div class="space-y-2 text-sm sm:text-base text-gray-700">
+                                    <div class="flex items-center gap-3 bg-white rounded-lg p-3">
+                                        <span class="text-2xl">🔴</span>
+                                        <div class="flex-1">
+                                            <strong>Again (1):</strong> +5 XP
+                                            <p class="text-xs text-gray-600">You didn't remember, but you tried!</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 bg-white rounded-lg p-3">
+                                        <span class="text-2xl">🟡</span>
+                                        <div class="flex-1">
+                                            <strong>Hard (3):</strong> +10 XP
+                                            <p class="text-xs text-gray-600">Good effort, you'll get it next time!</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 bg-white rounded-lg p-3">
+                                        <span class="text-2xl">🟢</span>
+                                        <div class="flex-1">
+                                            <strong>Good (4):</strong> +15 XP
+                                            <p class="text-xs text-gray-600">Perfect! Optimal learning pace!</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 bg-white rounded-lg p-3">
+                                        <span class="text-2xl">🔵</span>
+                                        <div class="flex-1">
+                                            <strong>Easy (5):</strong> +15 XP
+                                            <p class="text-xs text-gray-600">You've mastered this card!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6 safe-area-bottom">
+                            <button onclick="state.showGamification = false; render();"
+                                class="w-full bg-purple-600 active:bg-purple-700 text-white font-semibold py-3 sm:py-4 rounded-lg transition-colors touch-card">
+                                Start Earning Rewards!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+      }
+
+      function renderGuide() {
+        if (!state.showGuide) return "";
+        return `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50 fade-in">
+                    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto slide-up">
+                        <div class="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex items-center justify-between">
+                            <h2 class="text-lg sm:text-2xl font-bold text-gray-900">How It Works</h2>
+                            <button onclick="state.showGuide = false; render();" class="text-gray-500 active:text-gray-700 transition-colors p-2 touch-card">
+                                ${icon("x", "w-5 h-5 sm:w-6 sm:h-6")}
+                            </button>
+                        </div>
+
+                        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                            <section>
+                                <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">📚 What is Spaced Repetition?</h3>
+                                <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+                                    Spaced repetition is a scientifically-proven learning technique that helps you remember information long-term.
+                                    Cards you know well appear less often, while difficult cards appear more frequently until you master them.
+                                </p>
+                            </section>
+
+                            <section class="bg-purple-50 rounded-xl p-4 sm:p-5">
+                                <h3 class="text-lg sm:text-xl font-bold text-purple-600 mb-2 sm:mb-3">📁 Collections Feature</h3>
+                                <p class="text-sm sm:text-base text-gray-700 mb-3">
+                                    Organize your decks into collections! Group related decks together for better organization.
+                                </p>
+                                <ul class="space-y-2 text-sm sm:text-base text-gray-700">
+                                    <li class="flex gap-2">
+                                        <span class="text-purple-600">•</span>
+                                        <span><strong>Create Collections:</strong> Group decks by subject (e.g., "Japanese Language")</span>
+                                    </li>
+                                    <li class="flex gap-2">
+                                        <span class="text-purple-600">•</span>
+                                        <span><strong>Quick Review:</strong> Review all cards in a collection with one click</span>
+                                    </li>
+                                    <li class="flex gap-2">
+                                        <span class="text-purple-600">•</span>
+                                        <span><strong>Flexible Structure:</strong> Have both organized and standalone decks</span>
+                                    </li>
+                                </ul>
+                            </section>
+                        </div>
+
+                        <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6 safe-area-bottom">
+                            <button onclick="state.showGuide = false; render();"
+                                class="w-full bg-indigo-600 active:bg-indigo-700 text-white font-semibold py-3 sm:py-4 rounded-lg transition-colors touch-card">
+                                Got it! Let's Start Learning
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+      }
+
+      // Initialize
+      initializeUserData();
+      loadData();
+      render();
+
+      // Service Worker registration
+      if (
+        "serviceWorker" in navigator &&
+        window.location.hostname !== "www.claudeusercontent.com"
+      ) {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then(() => console.log("Service Worker registered"))
+          .catch((err) =>
+            console.log("Service Worker not available:", err.message)
+          );
+      }
+
+      // 🔥 Streak popup helper function with fade + float animation
+      function showStreakPopup(message) {
+        const popup = document.createElement("div");
+        popup.textContent = message;
+        popup.className =
+          "streak-popup fixed top-6 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white font-bold px-6 py-3 rounded-full shadow-lg text-sm sm:text-base z-[9999]";
+        document.body.appendChild(popup);
+
+        // trigger animation
+        popup.classList.add("fade-in-up");
+
+        // remove after animation ends
+        setTimeout(() => popup.remove(), 2500);
+      }
+    </script>
+
+    <style>
+      /* 🌟 Fade and float animation */
+      @keyframes fadeInUp {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, 20px);
+        }
+        20% {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+        80% {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -20px);
+        }
+      }
+
+      .fade-in-up {
+        animation: fadeInUp 2.3s ease forwards;
+      }
+    </style>
+  </body>
 </html>
-
