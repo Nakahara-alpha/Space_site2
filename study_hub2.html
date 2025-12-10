@@ -274,7 +274,7 @@
         Storage.set("cards", state.cards);
 
         // 💥 XP + Level system
-        const xpGain = quality >= 4 ? 15 : quality >= 3 ? 10 : 5;
+        const xpGain = quality >= 5 ? 40 : quality >= 4 ? 30 : quality >= 3 ? 20 : 10;
         const oldLevel = state.user.level;
         state.user.xp += xpGain;
         const newLevel = calculateLevel(state.user.xp);
@@ -330,36 +330,20 @@
       }
 
       function calculateLevel(xp) {
-        if (xp < 2000) return 1;
-        if (xp < 3000) return 2;
-        if (xp < 4250) return 3;
-        if (xp < 5750) return 4;
-        if (xp < 7500) return 5;
-        if (xp < 9500) return 6;
-        if (xp < 11750) return 7;
-        if (xp < 14250) return 8;
-        let level = 9,
-          threshold = 14250,
-          increment = 2750;
-        while (xp >= threshold + increment) {
-          threshold += increment;
-          increment += 250;
-          level++;
-        }
-        return level;
-      }
-
-      function getXPForNextLevel(currentLevel) {
-        if (currentLevel === 1) return 2000;
-        if (currentLevel === 2) return 1000;
-        if (currentLevel === 3) return 1250;
-        if (currentLevel === 4) return 1500;
-        if (currentLevel === 5) return 1750;
-        if (currentLevel === 6) return 2000;
-        if (currentLevel === 7) return 2250;
-        if (currentLevel === 8) return 2500;
-        return 2500 + (currentLevel - 8) * 250;
-      }
+    if (xp < 500) return 1;
+    let level = 1;
+    let totalXP = 0;
+    let xpNeeded = 500;
+    while (totalXP + xpNeeded <= xp) {
+        totalXP += xpNeeded;
+        level++;
+        xpNeeded += 50;
+    }
+    return level;
+}
+     function getXPForNextLevel(currentLevel) {
+    return 500 + (currentLevel - 1) * 50;
+}
 
       function getXPProgress() {
         const currentLevel = state.user.level;
@@ -1556,28 +1540,28 @@
                                     <div class="flex items-center gap-3 bg-white rounded-lg p-3">
                                         <span class="text-2xl">🔴</span>
                                         <div class="flex-1">
-                                            <strong>Again (1):</strong> +5 XP
+                                            <strong>Again (1):</strong> +10 XP
                                             <p class="text-xs text-gray-600">You didn't remember, but you tried!</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3 bg-white rounded-lg p-3">
                                         <span class="text-2xl">🟡</span>
                                         <div class="flex-1">
-                                            <strong>Hard (3):</strong> +10 XP
+                                            <strong>Hard (3):</strong> +20 XP
                                             <p class="text-xs text-gray-600">Good effort, you'll get it next time!</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3 bg-white rounded-lg p-3">
                                         <span class="text-2xl">🟢</span>
                                         <div class="flex-1">
-                                            <strong>Good (4):</strong> +15 XP
+                                            <strong>Good (4):</strong> +30 XP
                                             <p class="text-xs text-gray-600">Perfect! Optimal learning pace!</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3 bg-white rounded-lg p-3">
                                         <span class="text-2xl">🔵</span>
                                         <div class="flex-1">
-                                            <strong>Easy (5):</strong> +15 XP
+                                            <strong>Easy (5):</strong> +40 XP
                                             <p class="text-xs text-gray-600">You've mastered this card!</p>
                                         </div>
                                     </div>
@@ -1610,15 +1594,73 @@
 
                         <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
                             <section>
-                                <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">📚 What is Spaced Repetition?</h3>
-                                <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
-                                    Spaced repetition is a scientifically-proven learning technique that helps you remember information long-term.
-                                    Cards you know well appear less often, while difficult cards appear more frequently until you master them.
-                                </p>
-                            </section>
+    <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">📚 What is Spaced Repetition?</h3>
+    <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+        Spaced repetition is a scientifically-proven learning technique that helps you remember information long-term.
+        Instead of cramming, you review flashcards at increasing intervals. Cards you know well appear less often,
+        while difficult cards appear more frequently until you master them.
+    </p>
+</section>
 
-                            <section class="bg-purple-50 rounded-xl p-4 sm:p-5">
-                                <h3 class="text-lg sm:text-xl font-bold text-purple-600 mb-2 sm:mb-3">📁 Collections Feature</h3>
+<section class="bg-indigo-50 rounded-xl p-4 sm:p-5">
+    <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">🚀 Getting Started</h3>
+    <ol class="space-y-2 text-sm sm:text-base text-gray-700">
+        <li class="flex gap-2">
+            <span class="font-bold text-indigo-600">1.</span>
+            <div><strong>Create a Deck:</strong> Click "Create New Deck" and give it a title and course code</div>
+        </li>
+        <li class="flex gap-2">
+            <span class="font-bold text-indigo-600">2.</span>
+            <div><strong>Add Cards:</strong> Manually type question/answer pairs OR import a CSV file</div>
+        </li>
+        <li class="flex gap-2">
+            <span class="font-bold text-indigo-600">3.</span>
+            <div><strong>Start Reviewing:</strong> Click "Start Daily Review" to practice cards due today</div>
+        </li>
+        <li class="flex gap-2">
+            <span class="font-bold text-indigo-600">4.</span>
+            <div><strong>Rate Yourself:</strong> Honestly rate how well you knew each card</div>
+        </li>
+    </ol>
+</section>
+
+<section class="bg-purple-50 rounded-xl p-4 sm:p-5">
+    <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">🧠 The SM-2 Algorithm</h3>
+    <p class="text-sm sm:text-base text-gray-700 mb-3">
+        This app uses the SuperMemo-2 (SM-2) algorithm. Here's how it schedules your reviews:
+    </p>
+    <ul class="space-y-2 text-sm sm:text-base text-gray-700">
+        <li class="flex gap-2">
+            <span class="text-indigo-600">•</span>
+            <span><strong>First review:</strong> 1 day later</span>
+        </li>
+        <li class="flex gap-2">
+            <span class="text-indigo-600">•</span>
+            <span><strong>Second review:</strong> 6 days later (if you rated "Good" or better)</span>
+        </li>
+        <li class="flex gap-2">
+            <span class="text-indigo-600">•</span>
+            <span><strong>Future reviews:</strong> Interval multiplies based on performance</span>
+        </li>
+        <li class="flex gap-2">
+            <span class="text-indigo-600">•</span>
+            <span><strong>If you forget:</strong> Card resets to 1-day interval</span>
+        </li>
+    </ul>
+</section>
+
+<section>
+    <h3 class="text-lg sm:text-xl font-bold text-indigo-600 mb-2 sm:mb-3">📤 CSV Import Format</h3>
+    <p class="text-sm sm:text-base text-gray-700 mb-3">Bulk-import flashcards using this format:</p>
+    <div class="bg-gray-900 text-green-400 rounded-lg p-3 sm:p-4 font-mono text-xs sm:text-sm overflow-x-auto">
+        <div>front,back,tags</div>
+        <div>"What is photosynthesis?","Process plants use","biology;plants"</div>
+        <div>"Capital of France","Paris","geography;europe"</div>
+    </div>
+</section>
+
+<section class="bg-purple-50 rounded-xl p-4 sm:p-5">
+    <h3 class="text-lg sm:text-xl font-bold text-purple-600 mb-2 sm:mb-3">📁 Collections Feature</h3>
                                 <p class="text-sm sm:text-base text-gray-700 mb-3">
                                     Organize your decks into collections! Group related decks together for better organization.
                                 </p>
@@ -1711,4 +1753,5 @@
     </style>
   </body>
 </html>
+
 
